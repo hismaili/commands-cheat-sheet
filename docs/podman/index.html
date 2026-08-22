@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podman Commands — Build, Run, Compose, and What Deletes What | commands-cheat-sheet</title>
+<meta name="description" content="Field-tested Podman commands for build, run, compose and inspection — with the destructive ones labelled: what podman rm -a, stop -a, compose down and --force-recreate actually take with them.">
+<meta name="keywords" content="podman commands, podman compose down, podman build --format docker, podman rm -a, podman run detached, podman ps filter">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/podman/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="Podman Commands — Build, Run, Compose, and What Deletes What | commands-cheat-sheet">
+<meta property="og:description" content="Field-tested Podman commands for build, run, compose and inspection — with the destructive ones labelled: what podman rm -a, stop -a, compose down and --force-recreate actually take with them.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/podman/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Podman Commands — Build, Run, Compose, and What Deletes What | commands-cheat-sheet">
+<meta name="twitter:description" content="Field-tested Podman commands for build, run, compose and inspection — with the destructive ones labelled: what podman rm -a, stop -a, compose down and --force-recreate actually take with them.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/podman/#article","headline":"Podman Commands — Build, Run, Compose, and What Deletes What","description":"Field-tested Podman commands for build, run, compose and inspection — with the destructive ones labelled: what podman rm -a, stop -a, compose down and --force-recreate actually take with them.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/podman/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"podman commands, podman compose down, podman build --format docker, podman rm -a, podman run detached, podman ps filter"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"Podman","item":"https://hismaili.github.io/commands-cheat-sheet/podman/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/podman/#faq","mainEntity":[{"@type":"Question","name":"Need an image built from local source","acceptedAnswer":{"@type":"Answer","text":"podman build -t <APP_IMAGE> ."}},{"@type":"Question","name":"Registry/tool rejects OCI-format image","acceptedAnswer":{"@type":"Answer","text":"podman build --format docker -t <APP_IMAGE>:<VERSION> ."}},{"@type":"Question","name":"Want a disposable container that cleans itself up","acceptedAnswer":{"@type":"Answer","text":"podman run --rm -d -p <PORT>:80 --name <APP_CONTAINER> <APP_IMAGE>"}},{"@type":"Question","name":"Need a long-lived container with config injected","acceptedAnswer":{"@type":"Answer","text":"podman run -d --name <APP_CONTAINER> -p <PORT>:80 -e ... <APP_IMAGE>:<VERSION>"}},{"@type":"Question","name":"Bring up the whole compose stack","acceptedAnswer":{"@type":"Answer","text":"podman compose up -d"}},{"@type":"Question","name":"Tear down the compose stack entirely","acceptedAnswer":{"@type":"Answer","text":"podman compose down (destructive)"}},{"@type":"Question","name":"Compose containers stuck on stale image/config","acceptedAnswer":{"@type":"Answer","text":"podman-compose up -d --build --force-recreate (destructive)"}},{"@type":"Question","name":"Container crash-looping, need the story","acceptedAnswer":{"@type":"Answer","text":"podman logs <VAULT_CONTAINER>"}},{"@type":"Question","name":"Unsure what's actually running inside a container","acceptedAnswer":{"@type":"Answer","text":"podman exec <VAULT_CONTAINER> ps aux"}},{"@type":"Question","name":"Can't remember a container's exact name","acceptedAnswer":{"@type":"Answer","text":"podman ps -a --filter name=<VAULT_CONTAINER>"}},{"@type":"Question","name":"Know the port, not the container","acceptedAnswer":{"@type":"Answer","text":"podman ps \\"}},{"@type":"Question","name":"Need everything on the host stopped, right now","acceptedAnswer":{"@type":"Answer","text":"podman stop -a (destructive)"}},{"@type":"Question","name":"Need a clean container slate on the host","acceptedAnswer":{"@type":"Answer","text":"podman rm -a (destructive)"}},{"@type":"Question","name":"One container won't die gracefully","acceptedAnswer":{"@type":"Answer","text":"podman rm -f <VAULT_CONTAINER> (destructive)"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="../#sheets">Sheets</a>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#pipeline">How it is made</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Podman</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 14 commands &middot; 14 symptoms &middot; traced to source</p>
+<h1>Podman</h1>
+<p class="lede">Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</p>
+</div>
+<div class="doc">
+<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#build">Build</a></li><li><a href="#run">Run</a></li><li><a href="#compose">Compose</a></li><li><a href="#inspect">Inspect</a></li><li><a href="#manage">Manage</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
+<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
+<div class="prose"><section id="build"><h2 id="build">Build</h2><p>Podman builds from a Dockerfile/Containerfile in the working directory. Use <code>--format docker</code> when a downstream registry or tool insists on Docker image format rather than Podman's OCI default.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Build from the Containerfile/Dockerfile in the current directory</span>
+podman build -t &lt;APP_IMAGE&gt; .
+
+<span class="c"># Build in Docker image format with an explicit version tag</span>
+podman build --format docker -t &lt;APP_IMAGE&gt;:&lt;VERSION&gt; .</code></pre></div></section>
+<section id="run"><h2 id="run">Run</h2><p>Detached runs keep the shell free; <code>--rm</code> is for throwaway containers, while a named, non-<code>--rm</code> run is what you want once you're injecting config through env vars and expect to <code>logs</code>/<code>exec</code> into it later.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Run detached, auto-remove on exit, publish a port</span>
+podman run --rm -d -p &lt;PORT&gt;:80 --name &lt;APP_CONTAINER&gt; &lt;APP_IMAGE&gt;
+
+<span class="c"># Run detached (no auto-removal), inject env vars, use a versioned image</span>
+podman run -d --name &lt;APP_CONTAINER&gt; -p &lt;PORT&gt;:80 -e API_URL=&lt;API_URL&gt; -e KEYCLOAK_URL=&lt;KEYCLOAK_URL&gt; &lt;APP_IMAGE&gt;:&lt;VERSION&gt;</code></pre></div></section>
+<section id="compose"><h2 id="compose">Compose</h2><p><code>podman compose up -d</code> is the safe day-to-day start command. <code>down</code> and <code>--force-recreate</code> both destroy running state — reach for them only when you actually want a clean slate.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Start compose-defined services detached</span>
+podman compose up -d</code></pre></div>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong><code>podman compose down</code></strong> — <strong>destructive</strong>: stops and removes every container and network defined by the compose file in the current directory. Anything not persisted in a volume (in-memory state, unsaved data) is gone.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>podman compose down</code></pre></div>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong><code>podman-compose up -d --build --force-recreate</code></strong> — <strong>destructive</strong>: rebuilds images and tears down/recreates every compose container regardless of whether config or image actually changed, discarding current container state (in-container writes, non-persisted data) even for services that didn't need it.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>podman-compose up -d --build --force-recreate</code></pre></div></section>
+<section id="inspect"><h2 id="inspect">Inspect</h2><p>When you don't know which container owns a port, or whether a process inside it is actually alive, these are read-only — safe to run against production without side effects.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># View logs of a running/stopped container</span>
+podman logs &lt;VAULT_CONTAINER&gt;
+
+<span class="c"># List processes running inside a container</span>
+podman exec &lt;VAULT_CONTAINER&gt; ps aux
+
+<span class="c"># List all containers (running or stopped) filtered by name</span>
+podman ps -a --filter name=&lt;VAULT_CONTAINER&gt;
+
+<span class="c"># Find a running container by published port</span>
+podman ps | grep &lt;PORT&gt;</code></pre></div></section>
+<section id="manage"><h2 id="manage">Manage</h2><p>Bulk stop/remove commands act on <em>every</em> container on the host with no per-container confirmation — they don't distinguish yours from anyone else's on a shared machine.</p>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong><code>podman stop -a</code></strong> — <strong>destructive</strong>: stops every running container on the host, not just the one you're working on. Anything else running there goes down too.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>podman stop -a</code></pre></div>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong><code>podman rm -a</code></strong> — <strong>destructive</strong>: removes every stopped container on the host. Container filesystems and metadata for all of them are deleted; only bind-mounted or externally-managed data survives.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>podman rm -a</code></pre></div>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong><code>podman rm -f &lt;VAULT_CONTAINER&gt;</code></strong> — <strong>destructive</strong>: force-removes a specific container even while it's still running, killing it first with no graceful shutdown. In-flight requests and unflushed writes to the container's own filesystem are lost.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>podman rm -f &lt;VAULT_CONTAINER&gt;</code></pre></div></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-need-an-image-built-from-local-source"><h3 class="faq__q"><a href="#q-need-an-image-built-from-local-source">Need an image built from local source</a></h3><p class="faq__a"><code>podman build -t &lt;APP_IMAGE&gt; .</code></p></div><div class="faq__item" id="q-registry-tool-rejects-oci-format-image"><h3 class="faq__q"><a href="#q-registry-tool-rejects-oci-format-image">Registry/tool rejects OCI-format image</a></h3><p class="faq__a"><code>podman build --format docker -t &lt;APP_IMAGE&gt;:&lt;VERSION&gt; .</code></p></div><div class="faq__item" id="q-want-a-disposable-container-that-cleans-itself-up"><h3 class="faq__q"><a href="#q-want-a-disposable-container-that-cleans-itself-up">Want a disposable container that cleans itself up</a></h3><p class="faq__a"><code>podman run --rm -d -p &lt;PORT&gt;:80 --name &lt;APP_CONTAINER&gt; &lt;APP_IMAGE&gt;</code></p></div><div class="faq__item" id="q-need-a-long-lived-container-with-config-injected"><h3 class="faq__q"><a href="#q-need-a-long-lived-container-with-config-injected">Need a long-lived container with config injected</a></h3><p class="faq__a"><code>podman run -d --name &lt;APP_CONTAINER&gt; -p &lt;PORT&gt;:80 -e ... &lt;APP_IMAGE&gt;:&lt;VERSION&gt;</code></p></div><div class="faq__item" id="q-bring-up-the-whole-compose-stack"><h3 class="faq__q"><a href="#q-bring-up-the-whole-compose-stack">Bring up the whole compose stack</a></h3><p class="faq__a"><code>podman compose up -d</code></p></div><div class="faq__item" id="q-tear-down-the-compose-stack-entirely"><h3 class="faq__q"><a href="#q-tear-down-the-compose-stack-entirely">Tear down the compose stack entirely</a></h3><p class="faq__a"><code>podman compose down</code> (destructive)</p></div><div class="faq__item" id="q-compose-containers-stuck-on-stale-image-config"><h3 class="faq__q"><a href="#q-compose-containers-stuck-on-stale-image-config">Compose containers stuck on stale image/config</a></h3><p class="faq__a"><code>podman-compose up -d --build --force-recreate</code> (destructive)</p></div><div class="faq__item" id="q-container-crash-looping-need-the-story"><h3 class="faq__q"><a href="#q-container-crash-looping-need-the-story">Container crash-looping, need the story</a></h3><p class="faq__a"><code>podman logs &lt;VAULT_CONTAINER&gt;</code></p></div><div class="faq__item" id="q-unsure-what-s-actually-running-inside-a-container"><h3 class="faq__q"><a href="#q-unsure-what-s-actually-running-inside-a-container">Unsure what's actually running inside a container</a></h3><p class="faq__a"><code>podman exec &lt;VAULT_CONTAINER&gt; ps aux</code></p></div><div class="faq__item" id="q-can-t-remember-a-container-s-exact-name"><h3 class="faq__q"><a href="#q-can-t-remember-a-container-s-exact-name">Can't remember a container's exact name</a></h3><p class="faq__a"><code>podman ps -a --filter name=&lt;VAULT_CONTAINER&gt;</code></p></div><div class="faq__item" id="q-know-the-port-not-the-container"><h3 class="faq__q"><a href="#q-know-the-port-not-the-container">Know the port, not the container</a></h3><p class="faq__a">`podman ps \</p></div><div class="faq__item" id="q-need-everything-on-the-host-stopped-right-now"><h3 class="faq__q"><a href="#q-need-everything-on-the-host-stopped-right-now">Need everything on the host stopped, right now</a></h3><p class="faq__a"><code>podman stop -a</code> (destructive)</p></div><div class="faq__item" id="q-need-a-clean-container-slate-on-the-host"><h3 class="faq__q"><a href="#q-need-a-clean-container-slate-on-the-host">Need a clean container slate on the host</a></h3><p class="faq__a"><code>podman rm -a</code> (destructive)</p></div><div class="faq__item" id="q-one-container-won-t-die-gracefully"><h3 class="faq__q"><a href="#q-one-container-won-t-die-gracefully">One container won't die gracefully</a></h3><p class="faq__a"><code>podman rm -f &lt;VAULT_CONTAINER&gt;</code> (destructive)</p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<div class="related"><a href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a><a href="../openshift/"><b>OpenShift</b><span>Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</span></a><a href="../web/"><b>Web / React Native</b><span>Start Metro first — every other script in the project assumes it is already up in another terminal.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Podman]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div>
+</div></div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body></html>

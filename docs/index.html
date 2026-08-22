@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>commands-cheat-sheet — Commands that were run, not written</title>
+<meta name="description" content="Cheat sheets for OpenShift, Linux, Podman, Vault, OCI, npm, Flutter, Ruby and curl built only from recorded terminal sessions. Every command traces back to the line it was typed on, and every destructive one says what it actually costs you.">
+<meta name="keywords" content="command cheat sheet, oc commands, podman commands, vault commands, linux commands, devops cheat sheet, field tested commands, destructive command warnings">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="commands-cheat-sheet — Commands that were run, not written">
+<meta property="og:description" content="Cheat sheets for OpenShift, Linux, Podman, Vault, OCI, npm, Flutter, Ruby and curl built only from recorded terminal sessions. Every command traces back to the line it was typed on, and every destructive one says what it actually costs you.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="commands-cheat-sheet — Commands that were run, not written">
+<meta name="twitter:description" content="Cheat sheets for OpenShift, Linux, Podman, Vault, OCI, npm, Flutter, Ruby and curl built only from recorded terminal sessions. Every command traces back to the line it was typed on, and every destructive one says what it actually costs you.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/",
+ "description":"Cheat sheets for OpenShift, Linux, Podman, Vault, OCI, npm, Flutter, Ruby and curl built only from recorded terminal sessions. Every command traces back to the line it was typed on, and every destructive one says what it actually costs you.","inLanguage":"en",
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"}},
+{"@type":"ItemList","name":"Cheat sheets","numberOfItems":9,"itemListElement":[{"@type":"ListItem","position":1,"name":"OpenShift","url":"https://hismaili.github.io/commands-cheat-sheet/openshift/"},{"@type":"ListItem","position":2,"name":"Linux","url":"https://hismaili.github.io/commands-cheat-sheet/linux/"},{"@type":"ListItem","position":3,"name":"Podman","url":"https://hismaili.github.io/commands-cheat-sheet/podman/"},{"@type":"ListItem","position":4,"name":"Vault","url":"https://hismaili.github.io/commands-cheat-sheet/vault/"},{"@type":"ListItem","position":5,"name":"Oracle Cloud (OCI)","url":"https://hismaili.github.io/commands-cheat-sheet/oci/"},{"@type":"ListItem","position":6,"name":"Web / React Native","url":"https://hismaili.github.io/commands-cheat-sheet/web/"},{"@type":"ListItem","position":7,"name":"Mobile","url":"https://hismaili.github.io/commands-cheat-sheet/mobile/"},{"@type":"ListItem","position":8,"name":"Ruby","url":"https://hismaili.github.io/commands-cheat-sheet/ruby/"},{"@type":"ListItem","position":9,"name":"API Testing","url":"https://hismaili.github.io/commands-cheat-sheet/api-testing/"}]},
+{"@type":"SoftwareSourceCode","name":"commands-cheat-sheet","codeRepository":"https://github.com/hismaili/commands-cheat-sheet",
+ "programmingLanguage":"Shell","url":"https://hismaili.github.io/commands-cheat-sheet/"}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href=""><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="#sheets">Sheets</a>
+<a href="symptoms/">Symptoms</a>
+<a class="opt" href="#pipeline">How it is made</a>
+<a class="opt" href="#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main">
+
+<section class="hero"><div class="shell"><div class="hero__grid">
+<div>
+<p class="eyebrow"><span class="tick">&#9679;</span> 9 sheets &middot; 138 commands &middot; 48 symptoms &middot; 0 invented</p>
+<h1>These commands were <em>run</em>, not written.</h1>
+<p class="lede">138 commands lifted from real terminal sessions on real clusters and real machines &mdash; each one traceable to the line it was typed on, and each destructive one labelled with what it actually costs you.</p>
+<div class="hero__cta">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repository</a>
+<a class="btn btn--ghost" href="#sheets">Open a cheat sheet</a>
+</div>
+<p class="hero__meta">Free, MIT-ish, no signup, no tracking. Works fine at 2am.</p>
+</div>
+
+<div class="record">
+<div class="record__bar"><span class="record__dot"></span> Record &mdash; openshift / finalizers</div>
+<div class="record__row">
+<span class="record__k">Symptom</span>
+<p class="record__symptom">Namespace has sat in <code>Terminating</code> for forty minutes and will not go.</p>
+</div>
+<hr class="perf">
+<div class="record__row">
+<span class="record__k">Command, as run</span>
+<pre><code><span class="c"># strip finalizers from every Argo resource in the namespace</span>
+for obj in $(oc get applications.argoproj.io,\
+    applicationsets.argoproj.io,appprojects.argoproj.io \
+    -n &lt;NAMESPACE&gt; -o name); do
+  oc patch $obj -n &lt;NAMESPACE&gt; --type merge \
+    -p '{"metadata":{"finalizers":null}}'
+done</code></pre>
+</div>
+<hr class="perf">
+<div class="record__hazard">
+<span class="record__k">What it costs you</span>
+<p>Orphans every resource the app managed. ArgoCD stops tracking them and will never prune or reconcile them again. Delete the workload properly first if you can.</p>
+</div>
+<hr class="perf">
+<div class="record__trace">
+<b>Traced</b> <span>_sources/openshift/2026-08-21-argocd-logging-storage.txt</span>
+</div>
+</div>
+
+<div class="tally">
+<div><b>9</b><span>Sheets</span></div>
+<div><b>138</b><span>Commands</span></div>
+<div><b>48</b><span>Symptoms answered</span></div>
+<div><b>0</b><span>Invented</span></div>
+</div>
+
+</div></div></section>
+
+<section class="band" id="why"><div class="shell">
+<div class="band__head">
+<p class="eyebrow">Why this exists</p>
+<h2>The command you need already worked once. You just cannot find it.</h2>
+</div>
+<div class="acts">
+
+<div class="act">
+<div class="act__label">The problem</div>
+<div>
+<h3>Search gives you documentation, not experience.</h3>
+<p>Something is broken and you have maybe ten minutes. What comes back is the official reference reprinted by a content farm, a confidently wrong answer with syntax that has never existed, and a thread from 2019 about a version you are not running.</p>
+<p>The command that actually fixed this last time was in a scrollback buffer you closed three months ago.</p>
+</div>
+</div>
+
+<div class="act">
+<div class="act__label">What it costs</div>
+<div>
+<h3>The dangerous commands are the ones that look scoped.</h3>
+<p>Untested commands rarely fail loudly. They fail quietly, and later, and somewhere else.</p>
+<p class="act__quote">oc delete crd applications.argoproj.io<br><span style="color:var(--hazard)">&rarr; deletes every ArgoCD Application on the cluster, in every namespace. There is no per-namespace opt-out.</span></p>
+<p>The page you copied that from did not tell you, because nobody who wrote it had run it anywhere that mattered. Same story for <code>podman rm -a</code>, which removes every stopped container on the host rather than the one you were debugging, and <code>sudo fuser -k &lt;PORT&gt;/tcp</code>, which kills whatever holds the port with no graceful shutdown and no prompt.</p>
+</div>
+</div>
+
+<div class="act act--solve">
+<div class="act__label">What this is</div>
+<div>
+<h3>9 sheets, 138 commands, every one of them traceable.</h3>
+<p>Each command here came out of a recorded terminal session and carries a reference back to the dump line it was typed on. Commands that cannot be traced never make it onto the page &mdash; that rule is enforced by a pipeline, not by good intentions.</p>
+<p>Where a command is strange but worked, it is kept and flagged rather than quietly corrected: <a href="ruby/">a <code>sudo gem install --user-install</code> whose flags contradict each other</a> is still what ran successfully on the machine it was recorded from. Where a command destroys something, the sheet says exactly what.</p>
+<p><a href="#sheets">Start with a sheet</a>, or go straight to <a href="symptoms/">the symptom index</a> if you already know what is broken.</p>
+</div>
+</div>
+
+</div>
+</div></section>
+
+<section class="band band--sunk" id="sheets"><div class="shell">
+<div class="band__head">
+<p class="eyebrow">The sheets</p>
+<h2>Pick the tool that is currently lying to you.</h2>
+<p class="lede">Every sheet opens with the failure it exists to answer, then the commands, then a symptom-to-move table you can scan in a hurry.</p>
+</div>
+<div class="sheets"><a class="sheet" href="openshift/">
+<span class="sheet__name">OpenShift</span>
+<p class="sheet__desc">Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</p>
+<span class="sheet__foot"><span>78 commands</span><span>8 symptoms</span><span class="haz">4 flagged destructive</span></span>
+</a><a class="sheet" href="linux/">
+<span class="sheet__name">Linux</span>
+<p class="sheet__desc">PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</p>
+<span class="sheet__foot"><span>15 commands</span><span>7 symptoms</span><span class="haz">1 flagged destructive</span></span>
+</a><a class="sheet" href="podman/">
+<span class="sheet__name">Podman</span>
+<p class="sheet__desc">Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</p>
+<span class="sheet__foot"><span>14 commands</span><span>14 symptoms</span><span class="haz">10 flagged destructive</span></span>
+</a><a class="sheet" href="vault/">
+<span class="sheet__name">Vault</span>
+<p class="sheet__desc">Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</p>
+<span class="sheet__foot"><span>7 commands</span><span>5 symptoms</span></span>
+</a><a class="sheet" href="oci/">
+<span class="sheet__name">Oracle Cloud (OCI)</span>
+<p class="sheet__desc">Get the CLI on the box, get ~/.oci/config written, and get SSH to stop rejecting a perfectly good key.</p>
+<span class="sheet__foot"><span>8 commands</span><span>4 symptoms</span></span>
+</a><a class="sheet" href="web/">
+<span class="sheet__name">Web / React Native</span>
+<p class="sheet__desc">Start Metro first — every other script in the project assumes it is already up in another terminal.</p>
+<span class="sheet__foot"><span>5 commands</span><span>3 symptoms</span></span>
+</a><a class="sheet" href="mobile/">
+<span class="sheet__name">Mobile</span>
+<p class="sheet__desc">Which build system are you actually invoking — the native toolchain, or Expo&#x27;s remote one? The docs you need differ.</p>
+<span class="sheet__foot"><span>3 commands</span><span>2 symptoms</span></span>
+</a><a class="sheet" href="ruby/">
+<span class="sheet__name">Ruby</span>
+<p class="sheet__desc">Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land somewhere PATH has never heard of.</p>
+<span class="sheet__foot"><span>6 commands</span><span>3 symptoms</span></span>
+</a><a class="sheet" href="api-testing/">
+<span class="sheet__name">API Testing</span>
+<p class="sheet__desc">A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</p>
+<span class="sheet__foot"><span>2 commands</span><span>2 symptoms</span></span>
+</a><a class="sheet sheet--empty" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BGit%5D%20" target="_blank" rel="noopener">
+<span class="sheet__name">Git</span>
+<p class="sheet__desc">The directory exists and the pipeline is configured for it. No session has been recorded yet. Open an issue and it moves up.</p>
+<span class="sheet__foot"><span>Not recorded yet</span><span>Request it &rarr;</span></span>
+</a><a class="sheet sheet--empty" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener">
+<span class="sheet__name">Kafka</span>
+<p class="sheet__desc">The directory exists and the pipeline is configured for it. No session has been recorded yet. Open an issue and it moves up.</p>
+<span class="sheet__foot"><span>Not recorded yet</span><span>Request it &rarr;</span></span>
+</a><a class="sheet sheet--empty" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">
+<span class="sheet__name">Something else</span>
+<p class="sheet__desc">Sheets get written for tools I actually run. If you want one for a tool I do not, say so &mdash; requests are how this list grows.</p>
+<span class="sheet__foot"><span>Open a request &rarr;</span></span>
+</a></div>
+<p style="margin-top:1.5rem;font-size:.92rem;color:var(--muted)">Looking for something specific? <a href="symptoms/">All 48 symptoms across every sheet, on one page</a>.</p>
+</div></section>
+
+<section class="band" id="pipeline"><div class="shell">
+<div class="band__head">
+<p class="eyebrow">How a sheet is made</p>
+<h2>Four stages, and a command can only survive all four by being real.</h2>
+<p class="lede">This is a genuine sequence &mdash; each stage can only run on the output of the one before it, and the third stage physically cannot emit a command the second one did not record.</p>
+</div>
+<div class="pipe">
+<div class="pipe__step"><span class="pipe__n">STAGE 1</span><h3>Record</h3><p>A real working session is dumped to <code>_sources/</code>. Those dumps hold live tokens and hostnames, so they are gitignored and never leave the machine.</p></div>
+<div class="pipe__step"><span class="pipe__n">STAGE 2</span><h3>Extract</h3><p>Each command is structured into <code>commands.yml</code> with a <code>source_ref</code> pointing at its dump line. Credentials and identifiers are replaced here, once, at the only stage that reads raw source.</p></div>
+<div class="pipe__step"><span class="pipe__n">STAGE 3</span><h3>Write</h3><p>The sheet is generated from that file alone. No <code>source_ref</code>, no output &mdash; which is why a plausible-sounding command that nobody ran cannot appear.</p></div>
+<div class="pipe__step"><span class="pipe__n">STAGE 4</span><h3>Audit</h3><p>A reviewer reads the raw dump rather than a summary and diffs it against the sheet in both directions: invented commands and dropped ones. It reports; it never rewrites a working command.</p></div>
+</div>
+<p style="margin-top:1.5rem;font-size:.92rem;color:var(--muted)">The pipeline is its own open-source project &mdash; <a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge</a> &mdash; if you want to run it against your own recorded sessions.</p>
+</div></section>
+
+<section class="band band--sunk" id="ask"><div class="shell">
+<div class="ask">
+<div>
+<p class="eyebrow">Ask</p>
+<h2>Stuck on something that is not here yet?</h2>
+<p class="lede">Ask it as an issue. If the answer exists in a session I have recorded, it becomes a new entry on the relevant sheet, with its trace attached like everything else.</p>
+<p style="font-size:.93rem;color:var(--ink-2)">Three things that always get a reply:</p>
+<ul style="font-size:.93rem;color:var(--ink-2);padding-left:1.1rem">
+<li><strong>A command here did not work.</strong> That is a defect and I want it.</li>
+<li><strong>A command here is dangerous and not labelled.</strong> That is the worst kind of bug on this site.</li>
+<li><strong>A technology you want covered.</strong> Requests decide what gets recorded next.</li>
+</ul>
+<p style="margin-top:1.6rem"><a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repository</a></p>
+</div>
+<form class="form" data-issue-form data-repo="hismaili/commands-cheat-sheet">
+<div class="field">
+<label for="q-topic">Which sheet</label>
+<select id="q-topic" name="topic"><option>OpenShift</option><option>Linux</option><option>Podman</option><option>Vault</option><option>Oracle Cloud (OCI)</option><option>Web / React Native</option><option>Mobile</option><option>Ruby</option><option>API Testing</option><option>Git</option><option>Kafka</option><option>Not listed yet</option></select>
+</div>
+<div class="field">
+<label for="q-title">What is failing</label>
+<input id="q-title" name="title" type="text" placeholder="Namespace will not leave Terminating" required>
+</div>
+<div class="field">
+<label for="q-body">What you have tried</label>
+<textarea id="q-body" name="body" placeholder="Paste the command you ran and what it printed."></textarea>
+</div>
+<button class="btn" type="submit">Open this as a GitHub issue</button>
+<p class="form__note">This fills in a GitHub issue and opens it in a new tab &mdash; nothing is sent anywhere until you press submit there. No form data touches this site; there is no backend and no analytics.</p>
+</form>
+</div>
+</div></section>
+
+<section class="band"><div class="shell">
+<div class="endcta">
+<p class="eyebrow">One click</p>
+<h2>If one command here saved you an hour, star it.</h2>
+<p class="lede" style="margin-inline:auto">Stars are the only signal I get about which sheets are worth extending. There is no analytics on this site, so the alternative is guessing.</p>
+<div class="hero__cta">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star on GitHub</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a>
+</div>
+</div>
+</div></section>
+
+</main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="">Home</a></li>
+<li><a href="symptoms/">Every symptom, one page</a></li>
+<li><a href="#pipeline">How a sheet is made</a></li>
+<li><a href="#ask">Ask a question</a></li>
+<li><a href="sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="openshift/">OpenShift</a></li><li><a href="linux/">Linux</a></li><li><a href="podman/">Podman</a></li><li><a href="vault/">Vault</a></li><li><a href="oci/">Oracle Cloud (OCI)</a></li><li><a href="web/">Web / React Native</a></li><li><a href="mobile/">Mobile</a></li><li><a href="ruby/">Ruby</a></li><li><a href="api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="assets/site.js" defer></script>
+</body></html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OCI CLI Commands — Install, setup config, and SSH to an Instance | commands-cheat-sheet</title>
+<meta name="description" content="Field-tested Oracle Cloud Infrastructure commands: install and verify the OCI CLI, run setup config, and fix the key permissions that make SSH to a compute instance fail.">
+<meta name="keywords" content="oci cli commands, oci setup config, brew install oci-cli, oci ssh opc user, chmod go-rwx ssh key">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/oci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="OCI CLI Commands — Install, setup config, and SSH to an Instance | commands-cheat-sheet">
+<meta property="og:description" content="Field-tested Oracle Cloud Infrastructure commands: install and verify the OCI CLI, run setup config, and fix the key permissions that make SSH to a compute instance fail.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/oci/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OCI CLI Commands — Install, setup config, and SSH to an Instance | commands-cheat-sheet">
+<meta name="twitter:description" content="Field-tested Oracle Cloud Infrastructure commands: install and verify the OCI CLI, run setup config, and fix the key permissions that make SSH to a compute instance fail.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/oci/#article","headline":"OCI CLI Commands — Install, setup config, and SSH to an Instance","description":"Field-tested Oracle Cloud Infrastructure commands: install and verify the OCI CLI, run setup config, and fix the key permissions that make SSH to a compute instance fail.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/oci/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"oci cli commands, oci setup config, brew install oci-cli, oci ssh opc user, chmod go-rwx ssh key"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"Oracle Cloud (OCI)","item":"https://hismaili.github.io/commands-cheat-sheet/oci/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/oci/#faq","mainEntity":[{"@type":"Question","name":"`oci` command not found","acceptedAnswer":{"@type":"Answer","text":"brew install oci-cli, then oci --version to confirm"}},{"@type":"Question","name":"No `~/.oci/config` / auth errors on every call","acceptedAnswer":{"@type":"Answer","text":"oci setup config"}},{"@type":"Question","name":"SSH to instance hangs or is refused","acceptedAnswer":{"@type":"Answer","text":"chmod go-rwx on both the private key and .pub"}},{"@type":"Question","name":"Wrong user for the connection","acceptedAnswer":{"@type":"Answer","text":"Default OCI Linux image user is opc, not root or ec2-user"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="../#sheets">Sheets</a>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#pipeline">How it is made</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Oracle Cloud (OCI)</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 8 commands &middot; 4 symptoms &middot; traced to source</p>
+<h1>Oracle Cloud Infrastructure (OCI) Cheat Sheet</h1>
+<p class="lede">Get the CLI on the box, get ~/.oci/config written, and get SSH to stop rejecting a perfectly good key.</p>
+</div>
+<div class="doc">
+<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#oci-cli-setup">OCI CLI — Setup</a></li><li><a href="#oci-ssh-access">OCI — SSH Access</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
+<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
+<div class="prose"><section id="overview"><p>Two failure modes dominate day-one OCI work: the CLI is not on the box, or the key that should get you into a compute instance gets rejected. Both have a fixed, three-step fix.</p></section>
+<section id="oci-cli-setup"><h2 id="oci-cli-setup">OCI CLI — Setup</h2><p><strong>Install, confirm the binary actually landed, then run the wizard that writes <code>~/.oci/config</code>.</strong> Skipping the version check just moves the failure one step later, into <code>oci setup config</code>.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Install the CLI</span>
+brew install oci-cli
+
+<span class="c"># Confirm it installed and check its version</span>
+oci --version
+
+<span class="c"># Interactive wizard — API key, tenancy/user OCIDs, region</span>
+oci setup config</code></pre></div>
+<hr class="perf"></section>
+<section id="oci-ssh-access"><h2 id="oci-ssh-access">OCI — SSH Access</h2><p><strong>A rejected key is almost always permissions, not the key itself.</strong> <code>ssh</code> silently ignores private keys that are group- or world-readable — <code>chmod</code> both halves of the pair before you blame the key.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Set connection variables and connect</span>
+export oci_vm_ip=&lt;HOST_IP&gt;
+export username=opc
+export private_key_file=&lt;PRIVATE_KEY_FILE&gt;
+ssh -i $private_key_file $username@$oci_vm_ip
+
+<span class="c"># Lock down the key pair (run against both the private key and its .pub)</span>
+chmod go-rwx &lt;SSH_KEY_FILE&gt;</code></pre></div>
+<hr class="perf"></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-oci-command-not-found"><h3 class="faq__q"><a href="#q-oci-command-not-found"><code>oci</code> command not found</a></h3><p class="faq__a"><code>brew install oci-cli</code>, then <code>oci --version</code> to confirm</p></div><div class="faq__item" id="q-no-oci-config-auth-errors-on-every-call"><h3 class="faq__q"><a href="#q-no-oci-config-auth-errors-on-every-call">No <code>~/.oci/config</code> / auth errors on every call</a></h3><p class="faq__a"><code>oci setup config</code></p></div><div class="faq__item" id="q-ssh-to-instance-hangs-or-is-refused"><h3 class="faq__q"><a href="#q-ssh-to-instance-hangs-or-is-refused">SSH to instance hangs or is refused</a></h3><p class="faq__a"><code>chmod go-rwx</code> on both the private key and <code>.pub</code></p></div><div class="faq__item" id="q-wrong-user-for-the-connection"><h3 class="faq__q"><a href="#q-wrong-user-for-the-connection">Wrong user for the connection</a></h3><p class="faq__a">Default OCI Linux image user is <code>opc</code>, not <code>root</code> or <code>ec2-user</code></p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<div class="related"><a href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a><a href="../openshift/"><b>OpenShift</b><span>Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</span></a><a href="../podman/"><b>Podman</b><span>Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Oracle Cloud (OCI)]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div>
+</div></div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body></html>

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /build.py
+
+Sitemap: https://hismaili.github.io/commands-cheat-sheet/sitemap.xml

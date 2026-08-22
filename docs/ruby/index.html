@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ruby &amp; Gem Commands on macOS — GEM_HOME, PATH, CocoaPods | commands-cheat-sheet</title>
+<meta name="description" content="Field-tested Ruby commands for macOS: install a pinned gem around Apple&#x27;s system Ruby, then set GEM_HOME and the derived paths so gem, ruby and pod are actually found.">
+<meta name="keywords" content="gem install user-install macos, GEM_HOME PATH, cocoapods pod command not found, ruby macos system gem">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/ruby/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="Ruby &amp; Gem Commands on macOS — GEM_HOME, PATH, CocoaPods | commands-cheat-sheet">
+<meta property="og:description" content="Field-tested Ruby commands for macOS: install a pinned gem around Apple&#x27;s system Ruby, then set GEM_HOME and the derived paths so gem, ruby and pod are actually found.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/ruby/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ruby &amp; Gem Commands on macOS — GEM_HOME, PATH, CocoaPods | commands-cheat-sheet">
+<meta name="twitter:description" content="Field-tested Ruby commands for macOS: install a pinned gem around Apple&#x27;s system Ruby, then set GEM_HOME and the derived paths so gem, ruby and pod are actually found.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/ruby/#article","headline":"Ruby & Gem Commands on macOS — GEM_HOME, PATH, CocoaPods","description":"Field-tested Ruby commands for macOS: install a pinned gem around Apple's system Ruby, then set GEM_HOME and the derived paths so gem, ruby and pod are actually found.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/ruby/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"gem install user-install macos, GEM_HOME PATH, cocoapods pod command not found, ruby macos system gem"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"Ruby","item":"https://hismaili.github.io/commands-cheat-sheet/ruby/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/ruby/#faq","mainEntity":[{"@type":"Question","name":"Gem install fails against Apple-managed system Ruby","acceptedAnswer":{"@type":"Answer","text":"sudo gem install <GEM_NAME> -v <GEM_VERSION> --user-install (flag combo is contradictory but field-tested)"}},{"@type":"Question","name":"`gem`/`ruby`/`pod` command not found after install","acceptedAnswer":{"@type":"Answer","text":"Export GEM_HOME → derive RUBY_HOME and COCOAPODS_HOME under it → prepend each bin/ onto PATH"}},{"@type":"Question","name":"PATH export disappears in a new terminal/session","acceptedAnswer":{"@type":"Answer","text":"Add the same exports to .bash_profile so they persist"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="../#sheets">Sheets</a>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#pipeline">How it is made</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Ruby</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 6 commands &middot; 3 symptoms &middot; traced to source</p>
+<h1>Ruby Cheat Sheet</h1>
+<p class="lede">Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land somewhere PATH has never heard of.</p>
+</div>
+<div class="doc">
+<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#gem-install">Gem Install</a></li><li><a href="#gem-environment-setup">Gem Environment Setup</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
+<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
+<div class="prose"><section id="gem-install"><h2 id="gem-install">Gem Install</h2><p>Installing a gem on macOS runs straight into the Apple-managed system Ruby: no write access, no clean place to put it. The pinned <code>--user-install</code> form sidesteps that, at the cost of a flag combination that looks contradictory.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Install a specific pinned version of a gem for the invoking user only</span>
+sudo gem install &lt;GEM_NAME&gt; -v &lt;GEM_VERSION&gt; --user-install</code></pre></div>
+<div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>Uncertain — flag conflict left as-is:</strong> <code>sudo</code> installs as root while <code>--user-install</code> targets the invoking user's home directory. This is a known macOS footgun where the gem can land somewhere neither the user nor root expects. It is kept here unmodified because it is field-tested and worked on the source system — not corrected.</p></div></section>
+<section id="gem-environment-setup"><h2 id="gem-environment-setup">Gem Environment Setup</h2><p>A <code>pod</code>/<code>gem</code>/<code>ruby</code> command not found after install, on a toolchain that includes CocoaPods, means the gem-installed executables were never put on <code>PATH</code>. <code>GEM_HOME</code> has to be set first since <code>RUBY_HOME</code> and <code>COCOAPODS_HOME</code> are both derived paths underneath it — then each <code>bin/</code> gets prepended, and the whole block needs to be persisted or it's gone the moment the shell closes.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># 1. Point GEM_HOME at a user-owned gem root, derive the versioned Ruby</span>
+<span class="c">#    and CocoaPods gem paths under it, then prepend each bin/ onto PATH</span>
+export GEM_HOME=$HOME/.gem
+export RUBY_HOME=$GEM_HOME/ruby/2.6.0
+export COCOAPODS_HOME=$GEM_HOME/ruby/2.6.0/gems/cocoapods-1.16.2
+export PATH=$GEM_HOME/bin:$RUBY_HOME/bin:$COCOAPODS_HOME/bin:$PATH
+
+<span class="c"># 2. Persist it — without this, the exports above are gone on next login/shell</span>
+vi &lt;USER_HOME&gt;/.bash_profile</code></pre></div></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-gem-install-fails-against-apple-managed-system-ruby"><h3 class="faq__q"><a href="#q-gem-install-fails-against-apple-managed-system-ruby">Gem install fails against Apple-managed system Ruby</a></h3><p class="faq__a"><code>sudo gem install &lt;GEM_NAME&gt; -v &lt;GEM_VERSION&gt; --user-install</code> (flag combo is contradictory but field-tested)</p></div><div class="faq__item" id="q-gem-ruby-pod-command-not-found-after-install"><h3 class="faq__q"><a href="#q-gem-ruby-pod-command-not-found-after-install"><code>gem</code>/<code>ruby</code>/<code>pod</code> command not found after install</a></h3><p class="faq__a">Export <code>GEM_HOME</code> → derive <code>RUBY_HOME</code> and <code>COCOAPODS_HOME</code> under it → prepend each <code>bin/</code> onto <code>PATH</code></p></div><div class="faq__item" id="q-path-export-disappears-in-a-new-terminal-session"><h3 class="faq__q"><a href="#q-path-export-disappears-in-a-new-terminal-session">PATH export disappears in a new terminal/session</a></h3><p class="faq__a">Add the same exports to <code>.bash_profile</code> so they persist</p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<div class="related"><a href="../mobile/"><b>Mobile</b><span>Which build system are you actually invoking — the native toolchain, or Expo&#x27;s remote one? The docs you need differ.</span></a><a href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a><a href="../web/"><b>Web / React Native</b><span>Start Metro first — every other script in the project assumes it is already up in another terminal.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Ruby]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div>
+</div></div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body></html>

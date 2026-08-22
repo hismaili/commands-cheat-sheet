@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HashiCorp Vault Commands — KV v2, Policies, userpass, AppRole | commands-cheat-sheet</title>
+<meta name="description" content="Field-tested Vault commands in the order they have to run: mount a KV v2 engine, write a policy, enable userpass for humans, and set up AppRole RoleID/SecretID for services.">
+<meta name="keywords" content="vault commands cheat sheet, vault kv-v2 enable, vault policy write, vault approle role-id secret-id, vault auth enable userpass">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/vault/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="HashiCorp Vault Commands — KV v2, Policies, userpass, AppRole | commands-cheat-sheet">
+<meta property="og:description" content="Field-tested Vault commands in the order they have to run: mount a KV v2 engine, write a policy, enable userpass for humans, and set up AppRole RoleID/SecretID for services.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/vault/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HashiCorp Vault Commands — KV v2, Policies, userpass, AppRole | commands-cheat-sheet">
+<meta name="twitter:description" content="Field-tested Vault commands in the order they have to run: mount a KV v2 engine, write a policy, enable userpass for humans, and set up AppRole RoleID/SecretID for services.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/vault/#article","headline":"HashiCorp Vault Commands — KV v2, Policies, userpass, AppRole","description":"Field-tested Vault commands in the order they have to run: mount a KV v2 engine, write a policy, enable userpass for humans, and set up AppRole RoleID/SecretID for services.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/vault/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"vault commands cheat sheet, vault kv-v2 enable, vault policy write, vault approle role-id secret-id, vault auth enable userpass"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"Vault","item":"https://hismaili.github.io/commands-cheat-sheet/vault/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/vault/#faq","mainEntity":[{"@type":"Question","name":"No path to write secrets to","acceptedAnswer":{"@type":"Answer","text":"vault secrets enable -path=kv-<APP> kv-v2"}},{"@type":"Question","name":"A method needs an access policy before it's useful","acceptedAnswer":{"@type":"Answer","text":"vault policy write <APP>-admin - from HCL on stdin"}},{"@type":"Question","name":"Human operator needs a login","acceptedAnswer":{"@type":"Answer","text":"vault auth enable userpass once, then one vault write auth/userpass/users/... per person"}},{"@type":"Question","name":"A service needs to authenticate, not a person","acceptedAnswer":{"@type":"Answer","text":"AppRole: create role, read role-id, generate secret-id"}},{"@type":"Question","name":"SecretID compromised or rotated","acceptedAnswer":{"@type":"Answer","text":"Re-run vault write -f .../secret-id — RoleID stays the same"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="../#sheets">Sheets</a>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#pipeline">How it is made</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Vault</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 7 commands &middot; 5 symptoms &middot; traced to source</p>
+<h1>Vault Cheat Sheet</h1>
+<p class="lede">Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</p>
+</div>
+<div class="doc">
+<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#secrets-engines">Secrets Engines</a></li><li><a href="#policies">Policies</a></li><li><a href="#auth-methods-userpass">Auth Methods — userpass</a></li><li><a href="#approle-machine-authentication">AppRole — Machine Authentication</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
+<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
+<div class="prose"><section id="overview"><p>Standing up a Vault-backed app means wiring four things in order: where secrets live, who is allowed to read them, how a human authenticates, and how a machine authenticates. Skip a step and the next one has nothing to attach to.</p></section>
+<section id="secrets-engines"><h2 id="secrets-engines">Secrets Engines</h2><p><strong>Nothing can be written until a secrets engine is mounted at a path. KV v2 is the default choice — it gives you versioning for free.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Enable a KV version 2 secrets engine at a custom path</span>
+vault secrets enable -path=kv-&lt;APP&gt; kv-v2</code></pre></div>
+<hr class="perf"></section>
+<section id="policies"><h2 id="policies">Policies</h2><p><strong>A policy is just an HCL document naming paths and capabilities — write it once, attach it to every auth method that needs it.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Create or update a policy, reading the HCL document from stdin</span>
+vault policy write &lt;APP&gt;-admin -</code></pre></div>
+<hr class="perf"></section>
+<section id="auth-methods-userpass"><h2 id="auth-methods-userpass">Auth Methods — userpass</h2><p><strong>For human operators, userpass is the low-ceremony option: enable the method once, then create one user per person.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Enable the userpass authentication method</span>
+vault auth enable userpass
+
+<span class="c"># Create a user and attach a policy to it</span>
+vault write auth/userpass/users/admin-&lt;APP&gt; password="&lt;PASSWORD&gt;" policies="&lt;APP&gt;-admin"</code></pre></div>
+<hr class="perf"></section>
+<section id="approle-machine-authentication"><h2 id="approle-machine-authentication">AppRole — Machine Authentication</h2><p><strong>Services can't type a password. AppRole splits the credential in two — a RoleID that identifies the role and a SecretID that proves possession — so each half can be distributed and rotated separately.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Create the role, with the policy and TTLs it will hand out on login</span>
+vault write auth/approle/role/&lt;APP&gt;-backend-role token_policies="&lt;APP&gt;-app" token_ttl=1h token_max_ttl=4h
+
+<span class="c"># Read the RoleID — stable, safe to bake into config</span>
+vault read auth/approle/role/&lt;APP&gt;-backend-role/role-id
+
+<span class="c"># Generate a SecretID — treat this like a password, distribute out-of-band</span>
+vault write -f auth/approle/role/&lt;APP&gt;-backend-role/secret-id</code></pre></div>
+<hr class="perf"></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-no-path-to-write-secrets-to"><h3 class="faq__q"><a href="#q-no-path-to-write-secrets-to">No path to write secrets to</a></h3><p class="faq__a"><code>vault secrets enable -path=kv-&lt;APP&gt; kv-v2</code></p></div><div class="faq__item" id="q-a-method-needs-an-access-policy-before-it-s-useful"><h3 class="faq__q"><a href="#q-a-method-needs-an-access-policy-before-it-s-useful">A method needs an access policy before it's useful</a></h3><p class="faq__a"><code>vault policy write &lt;APP&gt;-admin -</code> from HCL on stdin</p></div><div class="faq__item" id="q-human-operator-needs-a-login"><h3 class="faq__q"><a href="#q-human-operator-needs-a-login">Human operator needs a login</a></h3><p class="faq__a"><code>vault auth enable userpass</code> once, then one <code>vault write auth/userpass/users/...</code> per person</p></div><div class="faq__item" id="q-a-service-needs-to-authenticate-not-a-person"><h3 class="faq__q"><a href="#q-a-service-needs-to-authenticate-not-a-person">A service needs to authenticate, not a person</a></h3><p class="faq__a">AppRole: create role, read <code>role-id</code>, generate <code>secret-id</code></p></div><div class="faq__item" id="q-secretid-compromised-or-rotated"><h3 class="faq__q"><a href="#q-secretid-compromised-or-rotated">SecretID compromised or rotated</a></h3><p class="faq__a">Re-run <code>vault write -f .../secret-id</code> — RoleID stays the same</p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<div class="related"><a href="../openshift/"><b>OpenShift</b><span>Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</span></a><a href="../api-testing/"><b>API Testing</b><span>A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</span></a><a href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Vault]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div>
+</div></div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body></html>

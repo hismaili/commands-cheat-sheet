@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>curl Commands for API Testing — CORS Preflight and OAuth2 Tokens | commands-cheat-sheet</title>
+<meta name="description" content="Field-tested curl commands for API testing: send the OPTIONS preflight a browser would send to read the real Access-Control-Allow headers, and trade credentials for a token via the password grant.">
+<meta name="keywords" content="curl cors preflight options, access-control-allow-origin test, oauth2 password grant curl, curl bearer token api testing">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/api-testing/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="curl Commands for API Testing — CORS Preflight and OAuth2 Tokens | commands-cheat-sheet">
+<meta property="og:description" content="Field-tested curl commands for API testing: send the OPTIONS preflight a browser would send to read the real Access-Control-Allow headers, and trade credentials for a token via the password grant.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/api-testing/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="curl Commands for API Testing — CORS Preflight and OAuth2 Tokens | commands-cheat-sheet">
+<meta name="twitter:description" content="Field-tested curl commands for API testing: send the OPTIONS preflight a browser would send to read the real Access-Control-Allow headers, and trade credentials for a token via the password grant.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/api-testing/#article","headline":"curl Commands for API Testing — CORS Preflight and OAuth2 Tokens","description":"Field-tested curl commands for API testing: send the OPTIONS preflight a browser would send to read the real Access-Control-Allow headers, and trade credentials for a token via the password grant.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/api-testing/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"curl cors preflight options, access-control-allow-origin test, oauth2 password grant curl, curl bearer token api testing"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"API Testing","item":"https://hismaili.github.io/commands-cheat-sheet/api-testing/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/api-testing/#faq","mainEntity":[{"@type":"Question","name":"Browser reports a CORS failure with no useful detail","acceptedAnswer":{"@type":"Answer","text":"Run the OPTIONS preflight manually and inspect the Access-Control-Allow- response headers"}},{"@type":"Question","name":"Need a bearer token before you can test a protected endpoint","acceptedAnswer":{"@type":"Answer","text":"Request one via the password grant against the token endpoint"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="../#sheets">Sheets</a>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#pipeline">How it is made</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>API Testing</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 2 commands &middot; 2 symptoms &middot; traced to source</p>
+<h1>API Testing</h1>
+<p class="lede">A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</p>
+</div>
+<div class="doc">
+<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#cors">CORS</a></li><li><a href="#oauth2">OAuth2</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
+<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li></ul></aside>
+<div class="prose"><section id="cors"><h2 id="cors">CORS</h2><p>A browser blocking a POST with an opaque "CORS error" isn't telling you what the server actually returned. Skip the browser and send the preflight yourself — the response headers say exactly which origin, method, and headers the server will allow.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Send the OPTIONS preflight a browser would send before a cross-origin POST</span>
+curl -X OPTIONS -i -H "Origin: &lt;ORIGIN&gt;" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: Content-Type" &lt;API_URL&gt;</code></pre></div></section>
+<section id="oauth2"><h2 id="oauth2">OAuth2</h2><p>Testing an endpoint behind OAuth2 means getting a token first — the resource owner password credentials grant does this in one request, trading a username and password directly for an access token.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Exchange user credentials for an access token via the password grant</span>
+curl -X POST '&lt;TOKEN_URL&gt;' -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=&lt;USERNAME&gt;' -d 'password=&lt;PASSWORD&gt;' -d 'grant_type=password' -d 'client_id=&lt;CLIENT_ID&gt;'</code></pre></div></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-browser-reports-a-cors-failure-with-no-useful-detail"><h3 class="faq__q"><a href="#q-browser-reports-a-cors-failure-with-no-useful-detail">Browser reports a CORS failure with no useful detail</a></h3><p class="faq__a">Run the OPTIONS preflight manually and inspect the <code>Access-Control-Allow-*</code> response headers</p></div><div class="faq__item" id="q-need-a-bearer-token-before-you-can-test-a-protected-endpoint"><h3 class="faq__q"><a href="#q-need-a-bearer-token-before-you-can-test-a-protected-endpoint">Need a bearer token before you can test a protected endpoint</a></h3><p class="faq__a">Request one via the password grant against the token endpoint</p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<div class="related"><a href="../vault/"><b>Vault</b><span>Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</span></a><a href="../web/"><b>Web / React Native</b><span>Start Metro first — every other script in the project assumes it is already up in another terminal.</span></a><a href="../openshift/"><b>OpenShift</b><span>Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[API Testing]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div>
+</div></div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body></html>

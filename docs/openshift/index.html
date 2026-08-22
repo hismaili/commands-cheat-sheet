@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenShift &amp; ArgoCD Commands — Stuck Syncs, Finalizers, RBAC, Loki | commands-cheat-sheet</title>
+<meta name="description" content="Field-tested oc commands for OpenShift: unstick an ArgoCD sync, strip finalizers off a namespace stuck Terminating, debug RBAC with can-i --as, verify Loki and ODF certificate chains.">
+<meta name="keywords" content="openshift commands, oc cheat sheet, argocd stuck sync, namespace terminating finalizers, oc auth can-i, lokistack, odf noobaa">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/openshift/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="OpenShift &amp; ArgoCD Commands — Stuck Syncs, Finalizers, RBAC, Loki | commands-cheat-sheet">
+<meta property="og:description" content="Field-tested oc commands for OpenShift: unstick an ArgoCD sync, strip finalizers off a namespace stuck Terminating, debug RBAC with can-i --as, verify Loki and ODF certificate chains.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/openshift/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OpenShift &amp; ArgoCD Commands — Stuck Syncs, Finalizers, RBAC, Loki | commands-cheat-sheet">
+<meta name="twitter:description" content="Field-tested oc commands for OpenShift: unstick an ArgoCD sync, strip finalizers off a namespace stuck Terminating, debug RBAC with can-i --as, verify Loki and ODF certificate chains.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/openshift/#article","headline":"OpenShift & ArgoCD Commands — Stuck Syncs, Finalizers, RBAC, Loki","description":"Field-tested oc commands for OpenShift: unstick an ArgoCD sync, strip finalizers off a namespace stuck Terminating, debug RBAC with can-i --as, verify Loki and ODF certificate chains.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/openshift/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"openshift commands, oc cheat sheet, argocd stuck sync, namespace terminating finalizers, oc auth can-i, lokistack, odf noobaa"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"OpenShift","item":"https://hismaili.github.io/commands-cheat-sheet/openshift/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/openshift/#faq","mainEntity":[{"@type":"Question","name":"Namespace stuck `Terminating`","acceptedAnswer":{"@type":"Answer","text":"Loop-patch finalizers:null over all Argo resources in it"}},{"@type":"Question","name":"Sync ignored, no new operation","acceptedAnswer":{"@type":"Answer","text":"operation:null first, then hard refresh, then force sync"}},{"@type":"Question","name":"`ConstraintsNotSatisfiable`","acceptedAnswer":{"@type":"Answer","text":"Package is not in any subscribed catalog — grep packagemanifest for the real name"}},{"@type":"Question","name":"Argo reports `forbidden`","acceptedAnswer":{"@type":"Answer","text":"can-i --as= the application controller against the target namespace"}},{"@type":"Question","name":"App healthy, one child broken","acceptedAnswer":{"@type":"Answer","text":"Filter .status.resources[?(@.kind==\"...\")]"}},{"@type":"Question","name":"S3 / Loki TLS refused","acceptedAnswer":{"@type":"Answer","text":"Extract cert + service CA, openssl verify the chain"}},{"@type":"Question","name":"Field reverts after apply","acceptedAnswer":{"@type":"Answer","text":"--server-side --force-conflicts --field-manager="}},{"@type":"Question","name":"Short name resolves to nothing / wrong thing","acceptedAnswer":{"@type":"Answer","text":"Qualify by full API group, especially on patch/can-i"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="../#sheets">Sheets</a>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#pipeline">How it is made</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>OpenShift</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 78 commands &middot; 8 symptoms &middot; traced to source</p>
+<h1>OpenShift Cheat Sheet</h1>
+<p class="lede">Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</p>
+</div>
+<div class="doc">
+<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#name-resources-fully">⚠️ Name Resources Fully</a></li><li><a href="#argocd-application-triage">ArgoCD — Application Triage</a></li><li><a href="#argocd-force-sync-unstick-operations">ArgoCD — Force Sync &amp; Unstick Operations</a></li><li><a href="#argocd-finalizers-stuck-namespaces">ArgoCD — Finalizers &amp; Stuck Namespaces</a></li><li><a href="#argocd-crd-teardown">ArgoCD — CRD Teardown</a></li><li><a href="#operators-subscriptions">Operators &amp; Subscriptions</a></li><li><a href="#rbac-permissions">RBAC &amp; Permissions</a></li><li><a href="#server-side-apply">Server-Side Apply</a></li><li><a href="#secrets-certificates">Secrets &amp; Certificates</a></li><li><a href="#storage-odf">Storage (ODF)</a></li><li><a href="#logging-monitoring">Logging &amp; Monitoring</a></li><li><a href="#reaching-internal-endpoints">Reaching Internal Endpoints</a></li><li><a href="#generic-inspection">Generic Inspection</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
+<h4>Other sheets</h4><ul><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
+<div class="prose"><section id="overview"><p>Clusters fail in predictable ways: a sync that never lands, a namespace that will not die, a certificate nobody trusts. These are the commands that end those arguments.</p></section>
+<section id="name-resources-fully"><h2 id="name-resources-fully">⚠️ Name Resources Fully</h2><p>Short names are convenient until they resolve to the wrong CRD. When an operator installs a resource, address it by its full API-group name — the short form is ambiguous and silently targets whatever the API server matched first.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># WRONG — ambiguous, may resolve to a different CRD</span>
+oc get applications,applicationsets,appprojects -n &lt;NAMESPACE&gt;
+
+<span class="c"># RIGHT — unambiguous</span>
+oc get applications.argoproj.io,applicationsets.argoproj.io,appprojects.argoproj.io -n &lt;NAMESPACE&gt;</code></pre></div>
+<div class='tablewrap'><table><thead><tr><th>Short name</th><th>Use instead</th><th>Installed by</th></tr></thead><tbody><tr><td><code>applications</code></td><td><code>applications.argoproj.io</code></td><td>OpenShift GitOps (ArgoCD)</td></tr><tr><td><code>applicationsets</code></td><td><code>applicationsets.argoproj.io</code></td><td>OpenShift GitOps</td></tr><tr><td><code>appprojects</code></td><td><code>appprojects.argoproj.io</code></td><td>OpenShift GitOps</td></tr><tr><td><code>obc</code></td><td><code>objectbucketclaims.objectbucket.io</code></td><td>ODF / NooBaa</td></tr><tr><td><code>routes</code></td><td><code>routes.route.openshift.io</code></td><td>OpenShift Ingress</td></tr></tbody></table></div>
+<p>The same rule applies in RBAC errors and <code>can-i</code> checks — the API group is part of the identity. <em>(No <code>oc get routes...</code> entry exists in the source inventory for this row — kept from the pre-existing reference table since the API-group risk it documents is real and unrelated commands elsewhere confirm the same short-name hazard.)</em></p>
+<h3 id="the-exception-made-explicit-mutating-and-rbac-calls-always-qualify">The exception, made explicit: mutating and RBAC calls always qualify</h3>
+<p>The source material reads <code>applications</code> bare for plain <code>get</code> calls in places, but <strong>every</strong> <code>patch</code>, <code>annotate</code>, and <code>auth can-i</code> against an Application in the same source is group-qualified. That is not inconsistency — it is the safer habit: a <code>get</code> on the wrong CRD returns an empty list you'll notice, a <code>patch</code> on the wrong CRD can silently no-op or hit an unrelated resource.</p>
+<div class='tablewrap'><table><thead><tr><th>Call</th><th>Wrong (bare)</th><th>Right (as sourced)</th><th>Why qualify here</th></tr></thead><tbody><tr><td>Strip finalizers on an Application</td><td><code>oc patch applications &lt;APP&gt; -n &lt;NS&gt; ...</code></td><td><code>oc patch applications.argoproj.io &lt;APP&gt; -n &lt;NS&gt; --type merge -p '{"metadata":{"finalizers":null}}'</code></td><td>mutating call — must resolve to exactly one CRD</td></tr><tr><td>Force-sync (hook strategy)</td><td><code>oc patch applications &lt;APP&gt; ...</code></td><td><code>oc patch applications.argoproj.io &lt;APP&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"operation":{"sync":{"syncStrategy":{"hook":{}}}}}'</code></td><td>same</td></tr><tr><td>Force-sync (prune + force apply)</td><td><code>oc patch applications &lt;APP&gt; ...</code></td><td><code>oc patch applications.argoproj.io &lt;APP&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"operation":{"initiatedBy":{"username":"manually"},"info":[{"name":"Resync","value":"manual force sync"}],"sync":{"prune":true,"syncStrategy":{"apply":{"force":true}}}}}'</code></td><td>same</td></tr><tr><td>Hard refresh</td><td><code>oc annotate applications &lt;APP&gt; ...</code></td><td><code>oc annotate applications.argoproj.io &lt;APP&gt; -n &lt;NAMESPACE&gt; argocd.argoproj.io/refresh=hard --overwrite</code></td><td>same</td></tr><tr><td>Self RBAC check</td><td><code>oc auth can-i patch applications -n &lt;NS&gt;</code></td><td><code>oc auth can-i patch applications.argoproj.io -n &lt;NAMESPACE&gt;</code></td><td>RBAC checks are also API-group-sensitive</td></tr></tbody></table></div>
+<hr class="perf"></section>
+<section id="argocd-application-triage"><h2 id="argocd-application-triage">ArgoCD — Application Triage</h2><p><strong>Find out what the app thinks it is doing before you touch it.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># List applications</span>
+oc -n &lt;NAMESPACE&gt; get applications.argoproj.io | grep -i &lt;FILTER&gt;
+oc get applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt;
+
+<span class="c"># Full state in one line</span>
+oc -n &lt;NAMESPACE&gt; get application.argoproj.io $APP -o jsonpath='sync={.status.sync.status} health={.status.health.status} syncedRev={.status.sync.revision}{"\n"}phase={.status.operationState.phase}msg={.status.operationState.message}{"\n"}'
+
+<span class="c"># Revision + sync state (sync health)</span>
+oc -n &lt;NAMESPACE&gt; get applications.argoproj.io &lt;APP_NAME&gt; -o jsonpath='rev={.status.sync.revision}{"\n"}sync={.status.sync.status}{"\n"}health={.status.sync.status}{"\n"}'
+oc get applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='sync={.status.sync.status} op={.status.operationState.phase}{"\n"}'
+
+<span class="c"># Tabular view</span>
+oc get applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; -o custom-columns='SYNC:.status.sync.status,HEALTH:.status.health.status,REV:.status.sync.revision'
+
+<span class="c"># Last operation result</span>
+oc get applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{.status.operationState.phase}{"\n"}{.status.operationState.message}{"\n"}'
+oc get applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{.status.operationState.retryCount}'
+
+<span class="c"># Configured sync options (hooks, replace, prune behaviour)</span>
+oc get applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{.spec.syncPolicy.syncOptions}'
+
+<span class="c"># App-level conditions</span>
+oc -n &lt;NAMESPACE&gt; get applications.argoproj.io &lt;APP_NAME&gt; -o jsonpath='{range .status.conditions[*]}{.type}:{.message}{"\n"}{end}'
+
+<span class="c"># Isolate one managed child resource by kind — finds the unhealthy member</span>
+oc -n &lt;NAMESPACE&gt; get application.argoproj.io $APP -o jsonpath='{range .status.resources[?(@.kind=="&lt;KIND&gt;")]}{.name}: {.status} {.health.status}{"\n"}{end}'
+
+<span class="c"># Live operation vs declared policy, side by side</span>
+oc get applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{.operation}{"\n---SPEC---\n"}{.spec.syncPolicy}{"\n"}'</code></pre></div>
+<div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>⚠️ Uncertain (kept as recorded):</strong> <code>oc -n &lt;NAMESPACE&gt; get application &lt;APP_NAME&gt; -o jsonpath -o custom-columns='SYNC:.status.sync.status,HEALTH:.status.health.status,REV:.status.sync.revision'</code> passes both <code>-o jsonpath</code> and <code>-o custom-columns</code> on the same invocation. <code>oc</code> only honours one <code>-o</code> flag (typically the last), so the <code>jsonpath</code> flag looks like a leftover from editing rather than something that took effect. Use the clean single-flag form above instead; this variant is preserved because it's what actually ran.</p></div>
+<hr class="perf"></section>
+<section id="argocd-force-sync-unstick-operations"><h2 id="argocd-force-sync-unstick-operations">ArgoCD — Force Sync &amp; Unstick Operations</h2><p><strong>An app stuck mid-operation ignores new syncs. Clear the operation first, then re-drive it.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Re-read Git, discard cached manifests</span>
+oc annotate applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; argocd.argoproj.io/refresh=hard --overwrite
+
+<span class="c"># Clear a wedged operation (do this before retrying)</span>
+oc patch applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"operation":null}'
+
+<span class="c"># Run hooks only</span>
+oc patch applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"operation":{"sync":{"syncStrategy":{"hook":{}}}}}'</code></pre></div>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong>⚠️ Destructive — pruning syncs delete live resources.</strong> <code>prune:true</code> removes anything no longer declared in Git; if Git is behind the cluster's real state, this deletes working resources, not just drift.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Manual sync — prune + force apply (also overwrites fields owned by other controllers)</span>
+oc patch applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"operation":{"initiatedBy":{"username":"manually"},"info":[{"name":"Resync","value":"manual force sync"}],"sync":{"prune":true,"syncStrategy":{"apply":{"force":true}}}}}'
+
+<span class="c"># Same, without force apply (still prunes, but respects field-ownership conflicts)</span>
+oc patch applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"operation":{"initiatedBy":{"username":"manually"},"info":[{"name":"Resync","value":"manual force sync"}],"sync":{"prune":true,"syncStrategy":{"apply":{"force":false}}}}}'
+
+<span class="c"># Prune, omitting syncStrategy — under JSON merge-patch semantics this LEAVES any prior strategy in place</span>
+oc patch applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"operation":{"initiatedBy":{"username":"manually"},"info":[{"name":"Resync","value":"manual force sync"}],"sync":{"prune":true}}}'
+
+<span class="c"># Prune, explicitly nulling syncStrategy — clears a strategy left over from a previous force-sync attempt</span>
+oc patch applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"operation":{"initiatedBy":{"username":"manually"},"info":[{"name":"Resync","value":"manual force sync"}],"sync":{"prune":true,"syncStrategy":null}}}'</code></pre></div>
+<div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>⚠️ Uncertain (kept as recorded):</strong> <code>oc patch applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"status":{"operationState":{"phase":"Terminating"}}}'</code> patches <code>.status</code> through the normal (non-subresource) patch endpoint. On a CRD with the status subresource enabled, this kind of patch is typically dropped silently by the API server rather than erroring — so it may look like it worked and do nothing. Kept because it appears in the source's actual troubleshooting flow.</p></div>
+<hr class="perf"></section>
+<section id="argocd-finalizers-stuck-namespaces"><h2 id="argocd-finalizers-stuck-namespaces">ArgoCD — Finalizers &amp; Stuck Namespaces</h2><p><strong>A namespace that will not terminate is almost always finalizers on Argo resources. Strip them in bulk.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Identify what is holding the namespace</span>
+oc get applications,applicationsets,appprojects -n &lt;NAMESPACE&gt;
+oc get &lt;KIND&gt; -n &lt;NAMESPACE&gt; -o name</code></pre></div>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong>⚠️ Destructive — orphans every resource the app managed.</strong> ArgoCD stops tracking anything whose finalizer you strip; it will not prune, reconcile, or clean those resources up again. Delete the workload properly first if you can.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Single resource — the ArgoCD Application</span>
+oc patch applications.argoproj.io &lt;APP_NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"metadata":{"finalizers":null}}'
+
+<span class="c"># The ArgoCD operator instance itself</span>
+oc patch argocd &lt;NAME&gt; -n &lt;NAMESPACE&gt; --type merge -p '{"metadata":{"finalizers":null}}'
+
+<span class="c"># One object captured in a loop variable</span>
+oc patch $obj -n &lt;NAMESPACE&gt; --type merge -p '{"metadata":{"finalizers":null}}'
+
+<span class="c"># Full recipe — strip finalizers from every Application/ApplicationSet/AppProject in the namespace</span>
+for obj in $(oc get applications.argoproj.io,applicationsets.argoproj.io,appprojects.argoproj.io -n &lt;NAMESPACE&gt; -o name); do
+  oc patch $obj -n &lt;NAMESPACE&gt; --type merge -p '{"metadata":{"finalizers":null}}'
+done</code></pre></div>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong>⚠️ Last resort.</strong> Removing <code>resources-finalizer.argocd.argoproj.io</code> orphans every resource the app managed — ArgoCD stops tracking them and will not clean them up. Delete the workload properly first if you can.</p></div>
+<hr class="perf"></section>
+<section id="argocd-crd-teardown"><h2 id="argocd-crd-teardown">ArgoCD — CRD Teardown</h2><p><strong>Uninstall leaves CRDs behind. Remove instances before definitions or deletion hangs.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Check what's still there</span>
+oc get crd &lt;CRD_NAME&gt; [&lt;CRD_NAME&gt;...]</code></pre></div>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong>⚠️ Destructive — deleting a CRD deletes every custom resource of that type, cluster-wide.</strong> There is no per-namespace opt-out: dropping <code>applications.argoproj.io</code> deletes every Application object on the cluster, not just the ones in the namespace you're working in.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Delete the Application/ApplicationSet/AppProject CRDs in one shot</span>
+oc delete crd applications.argoproj.io applicationsets.argoproj.io appprojects.argoproj.io
+
+<span class="c"># Same, idempotent and bounded — use when a plain delete left CRDs stuck</span>
+oc delete crd &lt;CRD_NAME&gt; [&lt;CRD_NAME&gt;...] --ignore-not-found --wait=true --timeout=120s
+
+<span class="c"># A single CRD (e.g. the core ArgoCD CRD), tolerating it already being gone</span>
+oc delete crd &lt;CRD_NAME&gt; --ignore-not-found</code></pre></div>
+<hr class="perf"></section>
+<section id="operators-subscriptions"><h2 id="operators-subscriptions">Operators &amp; Subscriptions</h2><p><strong><code>ConstraintsNotSatisfiable</code> means the package is not in any catalog you subscribed to — not that the operator is broken.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Which channels exist for this package?</span>
+oc get packagemanifest &lt;PACKAGE_NAME&gt; -o jsonpath='{.status.channels[*].name}'
+
+<span class="c"># Why did resolution fail?</span>
+oc -n &lt;NAMESPACE&gt; get sub &lt;SUBSCRIPTION_NAME&gt; -o jsonpath='{.status.conditions}' | jq
+
+<span class="c"># Find the real package name across catalogs</span>
+oc get packagemanifest -n openshift-marketplace -o custom-columns='NAME:metadata.name,CATALOG:.status.catalogSource,DEFAULT:.status.defaultChannel' | grep -i -E '&lt;FILTER&gt;'</code></pre></div>
+<hr class="perf"></section>
+<section id="rbac-permissions"><h2 id="rbac-permissions">RBAC &amp; Permissions</h2><p><strong>Argo sync failures are usually RBAC, not Git. Impersonate the controller and confirm.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># As yourself</span>
+oc auth can-i &lt;VERB&gt; &lt;RESOURCE&gt; -n &lt;NAMESPACE&gt;
+oc auth can-i patch applications.argoproj.io -n &lt;NAMESPACE&gt;
+
+<span class="c"># As a service account — the real question</span>
+oc auth can-i &lt;VERB&gt; &lt;RESOURCE&gt; --as=system:serviceaccount:&lt;SA_NS&gt;:&lt;SA_NAME&gt; -n &lt;TARGET_NS&gt;
+
+<span class="c"># The ArgoCD application controller, specifically</span>
+oc auth can-i patch &lt;RESOURCE&gt; --as=system:serviceaccount:&lt;GITOPS_NAMESPACE&gt;:&lt;CONTROLLER_SA&gt; -n &lt;TARGET_NAMESPACE&gt;
+
+<span class="c"># Loki tenant access (subresource-style grant)</span>
+oc auth can-i get loki.grafana.com/logs --as=system:serviceaccount:&lt;SA_NS&gt;:&lt;SA_NAME&gt; -n &lt;NAMESPACE&gt;
+
+<span class="c"># What does the role actually grant?</span>
+oc get clusterrole &lt;ROLE&gt; -o jsonpath='{range .rules[*]}{.apiGroups}{" "}{.resources}{" "}{.verbs}{"\n"}{end}'
+oc get clusterrole &lt;ROLE&gt; -o jsonpath='{range .rules[*]}{.apiGroups}{" "}{.resources}{" "}{.verbs}{" names="}{.resourceNames}{"\n"}{end}'</code></pre></div>
+<div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>⚠️ Uncertain (kept as recorded):</strong> <code>oc auth can-i get applications.argoproj.io &lt;RESOURCE_NAME&gt; --as=system:serviceaccount:&lt;NAMESPACE&gt;:&lt;SA_NAME&gt; -n &lt;NAMESPACE&gt;</code> where <code>&lt;RESOURCE_NAME&gt;</code> was recorded as <code>loki.grafana.com/logs</code> — a Loki API path passed as the positional resource-<em>name</em> argument to an <code>applications.argoproj.io</code> check. No Application is normally named like that; the likely intent was the standalone Loki tenant check above (<code>can-i get loki.grafana.com/logs</code>) rather than this combination. Kept as recorded rather than corrected.</p></div>
+<hr class="perf"></section>
+<section id="server-side-apply"><h2 id="server-side-apply">Server-Side Apply</h2><p><strong>When a field is owned by another manager, a normal apply loses. Take ownership explicitly.</strong></p>
+<div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong>⚠️ Destructive — <code>--force-conflicts</code> can silently override another controller's field ownership</strong>, discarding whatever that controller last set. Used both for ArgoCD bootstrap RBAC manifests and generic kustomize applies; same risk either way.</p></div>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>oc apply -k &lt;KUSTOMIZE_DIR&gt; --server-side --force-conflicts --field-manager=&lt;FIELD_MANAGER&gt;</code></pre></div>
+<hr class="perf"></section>
+<section id="secrets-certificates"><h2 id="secrets-certificates">Secrets &amp; Certificates</h2><p><strong>Trust failures are chain failures. Extract both ends and verify them against each other.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Decode any secret key</span>
+oc get secret &lt;SECRET_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{.data.&lt;KEY&gt;}' | base64 -d; echo
+
+<span class="c"># Serving certificate</span>
+oc get secret &lt;SECRET_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{.data.tls\.crt}' | base64 -d &gt; /tmp/svc.crt
+
+<span class="c"># The CA that should have signed it</span>
+oc get cm openshift-service-ca.crt -n &lt;NAMESPACE&gt; -o jsonpath='{.data.service-ca\.crt}' | base64 -d &gt; /tmp/service-ca.crt
+
+<span class="c"># Inspect</span>
+openssl x509 -in &lt;CERT_FILE&gt; -noout -issuer -subject -ext subjectAltName
+
+<span class="c"># Verify the chain — this is the answer</span>
+openssl verify -CAfile &lt;CA_FILE&gt; &lt;CERT_FILE&gt;</code></pre></div>
+<p>A SAN mismatch and an expired cert produce the same symptom as a missing CA. Check all three in one pass.</p>
+<hr class="perf"></section>
+<section id="storage-odf"><h2 id="storage-odf">Storage (ODF)</h2><p><strong>ODF installs into <code>openshift-storage</code> by convention; NooBaa resource names are fixed by the operator.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>oc get storagecluster,noobaa,cephcluster -n &lt;NAMESPACE&gt;
+
+<span class="c"># Which operator/CSV owns this Subscription</span>
+oc get sub "$SUB" -n &lt;NAMESPACE&gt; -o jsonpath='{.metadata.ownerReferences}{"\n"}{.metadata.labels}{"\n"}{.metadata.annotations}{"\n"}'
+
+<span class="c"># NooBaa S3 serving cert</span>
+oc -n &lt;NAMESPACE&gt; get secret &lt;SECRET_NAME&gt; -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -subject -ext subjectAltName -dates
+oc -n &lt;NAMESPACE&gt; get secret &lt;SECRET_NAME&gt; -o jsonpath='{.data.tls\.crt}' | base64 -d &gt; /tmp/noobaa.crt
+
+<span class="c"># The cluster service-CA bundle (note: on some clusters the ConfigMap's .data value is itself base64-encoded, so base64 -d here is correct even though ConfigMap data is usually plain text)</span>
+oc -n &lt;NAMESPACE&gt; get cm openshift-service-ca.crt -o jsonpath='{.data.service-ca\.crt}' | base64 -d &gt; /tmp/service-ca.crt
+
+<span class="c"># Bucket claims and the bucket names handed to the consumer</span>
+oc get objectbucketclaims.objectbucket.io -n &lt;NAMESPACE&gt;</code></pre></div>
+<hr class="perf"></section>
+<section id="logging-monitoring"><h2 id="logging-monitoring">Logging &amp; Monitoring</h2><p><strong>Loki ingest breaks at the S3 boundary far more often than at the log source.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># LokiStack and its storage TLS config</span>
+oc get lokistack -n &lt;NAMESPACE&gt;
+oc -n &lt;NAMESPACE&gt; get lokistack &lt;NAME&gt; -o jsonpath='tls={.spec.storage.tls}{"\n"}'
+
+<span class="c"># Component pods — conditions carry the real error</span>
+oc get pods -n &lt;NAMESPACE&gt; | grep &lt;FILTER&gt;
+oc -n &lt;NAMESPACE&gt; get pod -l &lt;LABEL_SELECTOR&gt; -o jsonpath='{range .status.conditions[*]}{.type}:{.message}{"\n"}{end}'
+
+<span class="c"># Bucket claim</span>
+oc get obc -n &lt;NAMESPACE&gt;
+
+<span class="c"># S3 bucket name(s) handed to Loki</span>
+oc -n &lt;NAMESPACE&gt; get secret &lt;SECRET_NAME&gt; -o jsonpath='{.data.bucketnames}' | base64 -d; echo
+
+<span class="c"># Bridge / migration jobs</span>
+oc get job -n &lt;NAMESPACE&gt;
+oc get job &lt;JOB_NAME&gt; -n &lt;NAMESPACE&gt;
+oc get job &lt;JOB_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'</code></pre></div>
+<div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>⚠️ Uncertain (kept as recorded):</strong> one recorded bridge-job image lookup — <code>oc get job loki-s3-bridge -n openshift-gitops -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'</code> — queries the job in <code>openshift-gitops</code>, while the same job is queried against <code>openshift-logging</code> everywhere else in the source. Possibly a copy-paste namespace mismatch; use <code>-n &lt;NAMESPACE&gt;</code> and confirm which namespace the job actually lives in before trusting the result.</p></div>
+<hr class="perf"></section>
+<section id="reaching-internal-endpoints"><h2 id="reaching-internal-endpoints">Reaching Internal Endpoints</h2><p><strong>Cluster-internal services are not reachable from your laptop. Curl them from a pod that already has network and identity.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Borrow the consumer's token</span>
+TOKEN=$(oc get secret &lt;SECRET_NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{.data.token}' | base64 -d)
+
+<span class="c"># Query Loki per tenant — &lt;TENANT&gt; is application | infrastructure | audit</span>
+oc exec -n &lt;NAMESPACE&gt; deploy/&lt;DEPLOYMENT&gt; -c &lt;CONTAINER&gt; -- curl -sS -k \
+  -H "AUTHORIZATION: Bearer $TOKEN" \
+  https://&lt;LOKI_GATEWAY&gt;.&lt;LOKI_NS&gt;.svc:8080/api/logs/v1/&lt;TENANT&gt;/loki/api/v1/labels
+
+<span class="c"># Prometheus health</span>
+oc exec -n &lt;NAMESPACE&gt; deploy/&lt;DEPLOYMENT&gt; -c &lt;CONTAINER&gt; -- curl -sk \
+  https://&lt;PROMETHEUS_SVC&gt;.&lt;PROMETHEUS_NS&gt;.svc.cluster.local:9090/-/healthy</code></pre></div>
+<div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>⚠️ Uncertain (kept as recorded):</strong> <code>oc exec -n &lt;GRAFANA_NAMESPACE&gt; deploy/&lt;GRAFANA_DEPLOYMENT&gt; -c grafana -- curl -sk -H https://&lt;PROMETHEUS_SVC&gt;:9090/~/healthy</code> — <code>-H</code> expects a header value, not a URL, and no separate target URL is passed to <code>curl</code>. As written this looks incomplete or malformed rather than a working health check. Use the clean form above (<code>curl -sk https://&lt;PROMETHEUS_SVC&gt;...:9090/-/healthy</code>, no <code>-H</code>) instead; this variant is preserved because it's what was actually run.</p></div>
+<hr class="perf"></section>
+<section id="generic-inspection"><h2 id="generic-inspection">Generic Inspection</h2><p>Patterns that apply to any custom resource with a <code>.status</code>/<code>.status.conditions</code> block, not just Argo or Loki types.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>oc get &lt;KIND&gt; -n &lt;NAMESPACE&gt;
+oc get &lt;KIND&gt; -n &lt;NAMESPACE&gt; -o name
+oc get namespace &lt;NAMESPACE&gt;
+oc get &lt;KIND&gt; &lt;NAME&gt; -n &lt;NAMESPACE&gt;
+oc get &lt;KIND&gt; &lt;NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{range .status.conditions[*]}{.type}:{.message}{"\n"}{end}'
+oc get pod -l &lt;LABEL_SELECTOR&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{range .status.conditions[*]}{.type}:{.message}{"\n"}{end}'
+oc get &lt;KIND&gt; &lt;NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='sync={.status.sync.status} health={.status.health.status}'
+oc get &lt;KIND&gt; &lt;NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{range .status.resources[?(@.kind=="&lt;KIND&gt;")]}{.name}: {.status} {.health.status}{"\n"}{end}'</code></pre></div>
+<hr class="perf"></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-namespace-stuck-terminating"><h3 class="faq__q"><a href="#q-namespace-stuck-terminating">Namespace stuck <code>Terminating</code></a></h3><p class="faq__a">Loop-patch <code>finalizers:null</code> over all Argo resources in it</p></div><div class="faq__item" id="q-sync-ignored-no-new-operation"><h3 class="faq__q"><a href="#q-sync-ignored-no-new-operation">Sync ignored, no new operation</a></h3><p class="faq__a"><code>operation:null</code> first, then hard refresh, then force sync</p></div><div class="faq__item" id="q-constraintsnotsatisfiable"><h3 class="faq__q"><a href="#q-constraintsnotsatisfiable"><code>ConstraintsNotSatisfiable</code></a></h3><p class="faq__a">Package is not in any subscribed catalog — grep <code>packagemanifest</code> for the real name</p></div><div class="faq__item" id="q-argo-reports-forbidden"><h3 class="faq__q"><a href="#q-argo-reports-forbidden">Argo reports <code>forbidden</code></a></h3><p class="faq__a"><code>can-i --as=</code> the application controller against the target namespace</p></div><div class="faq__item" id="q-app-healthy-one-child-broken"><h3 class="faq__q"><a href="#q-app-healthy-one-child-broken">App healthy, one child broken</a></h3><p class="faq__a">Filter <code>.status.resources[?(@.kind=="...")]</code></p></div><div class="faq__item" id="q-s3-loki-tls-refused"><h3 class="faq__q"><a href="#q-s3-loki-tls-refused">S3 / Loki TLS refused</a></h3><p class="faq__a">Extract cert + service CA, <code>openssl verify</code> the chain</p></div><div class="faq__item" id="q-field-reverts-after-apply"><h3 class="faq__q"><a href="#q-field-reverts-after-apply">Field reverts after apply</a></h3><p class="faq__a"><code>--server-side --force-conflicts --field-manager=</code></p></div><div class="faq__item" id="q-short-name-resolves-to-nothing-wrong-thing"><h3 class="faq__q"><a href="#q-short-name-resolves-to-nothing-wrong-thing">Short name resolves to nothing / wrong thing</a></h3><p class="faq__a">Qualify by full API group, especially on <code>patch</code>/<code>can-i</code></p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<div class="related"><a href="../vault/"><b>Vault</b><span>Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</span></a><a href="../podman/"><b>Podman</b><span>Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</span></a><a href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[OpenShift]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div>
+</div></div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body></html>

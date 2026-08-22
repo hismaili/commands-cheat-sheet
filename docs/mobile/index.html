@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flutter &amp; Expo Build Commands — Native vs Remote Build Service | commands-cheat-sheet</title>
+<meta name="description" content="Field-tested mobile build commands, and which build system you are actually invoking: the native Flutter toolchain versus the classic Expo remote build service.">
+<meta name="keywords" content="flutter build android, expo build:android, expo build:ios, mobile build commands, npx expo classic build">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/mobile/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="Flutter &amp; Expo Build Commands — Native vs Remote Build Service | commands-cheat-sheet">
+<meta property="og:description" content="Field-tested mobile build commands, and which build system you are actually invoking: the native Flutter toolchain versus the classic Expo remote build service.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/mobile/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Flutter &amp; Expo Build Commands — Native vs Remote Build Service | commands-cheat-sheet">
+<meta name="twitter:description" content="Field-tested mobile build commands, and which build system you are actually invoking: the native Flutter toolchain versus the classic Expo remote build service.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/mobile/#article","headline":"Flutter & Expo Build Commands — Native vs Remote Build Service","description":"Field-tested mobile build commands, and which build system you are actually invoking: the native Flutter toolchain versus the classic Expo remote build service.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/mobile/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"flutter build android, expo build:android, expo build:ios, mobile build commands, npx expo classic build"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"Mobile","item":"https://hismaili.github.io/commands-cheat-sheet/mobile/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/mobile/#faq","mainEntity":[{"@type":"Question","name":"Need an installable Android binary from a Flutter project","acceptedAnswer":{"@type":"Answer","text":"flutter build android app (verify — non-standard form, see note above)"}},{"@type":"Question","name":"Need a native binary without a local native toolchain","acceptedAnswer":{"@type":"Answer","text":"npx expo build:android / npx expo build:ios"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="../#sheets">Sheets</a>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#pipeline">How it is made</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Mobile</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 3 commands &middot; 2 symptoms &middot; traced to source</p>
+<h1>Mobile Cheat Sheet</h1>
+<p class="lede">Which build system are you actually invoking — the native toolchain, or Expo&#x27;s remote one? The docs you need differ.</p>
+</div>
+<div class="doc">
+<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#flutter-build">Flutter — Build</a></li><li><a href="#expo-build">Expo — Build</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
+<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
+<div class="prose"><section id="overview"><p>Flutter and Expo each own a different slice of the mobile build pipeline — the native build system versus the (classic) Expo remote build service. Knowing which one you're actually invoking saves a round trip through the wrong docs.</p></section>
+<section id="flutter-build"><h2 id="flutter-build">Flutter — Build</h2><p><strong>Native Android packaging goes through <code>flutter build</code>, not a bare <code>flutter</code> verb.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Build the Android app from a Flutter project</span>
+flutter build android app</code></pre></div>
+<div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>Uncertain — preserved verbatim.</strong> <code>flutter build android app</code> is not a documented <code>flutter</code> subcommand; the standard forms are <code>flutter build apk</code> or <code>flutter build appbundle</code>. This may be a custom script or shell alias on the source system rather than the bare Flutter CLI. Copied as run — verify against your own <code>flutter</code> before relying on it.</p></div>
+<hr class="perf"></section>
+<section id="expo-build"><h2 id="expo-build">Expo — Build</h2><p><strong>The classic Expo build service compiles native binaries remotely — no local Xcode/Android SDK toolchain required.</strong></p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Build an Android binary using the (classic) Expo build service</span>
+npx expo build:android
+
+<span class="c"># Build an iOS binary using the (classic) Expo build service</span>
+npx expo build:ios</code></pre></div>
+<hr class="perf"></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-need-an-installable-android-binary-from-a-flutter-project"><h3 class="faq__q"><a href="#q-need-an-installable-android-binary-from-a-flutter-project">Need an installable Android binary from a Flutter project</a></h3><p class="faq__a"><code>flutter build android app</code> (verify — non-standard form, see note above)</p></div><div class="faq__item" id="q-need-a-native-binary-without-a-local-native-toolchain"><h3 class="faq__q"><a href="#q-need-a-native-binary-without-a-local-native-toolchain">Need a native binary without a local native toolchain</a></h3><p class="faq__a"><code>npx expo build:android</code> / <code>npx expo build:ios</code></p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<div class="related"><a href="../web/"><b>Web / React Native</b><span>Start Metro first — every other script in the project assumes it is already up in another terminal.</span></a><a href="../ruby/"><b>Ruby</b><span>Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land somewhere PATH has never heard of.</span></a><a href="../api-testing/"><b>API Testing</b><span>A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Mobile]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div>
+</div></div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body></html>

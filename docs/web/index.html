@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>npm &amp; React Native Commands — Metro, run ios/android/web, build | commands-cheat-sheet</title>
+<meta name="description" content="Field-tested npm scripts for a React Native / Expo project: start the Metro dev server, run on iOS, Android or the browser, and produce a deployable static web build.">
+<meta name="keywords" content="react native npm commands, npm start metro, npm run ios android web, npm run build:web, expo dev server">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/web/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="npm &amp; React Native Commands — Metro, run ios/android/web, build | commands-cheat-sheet">
+<meta property="og:description" content="Field-tested npm scripts for a React Native / Expo project: start the Metro dev server, run on iOS, Android or the browser, and produce a deployable static web build.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/web/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="npm &amp; React Native Commands — Metro, run ios/android/web, build | commands-cheat-sheet">
+<meta name="twitter:description" content="Field-tested npm scripts for a React Native / Expo project: start the Metro dev server, run on iOS, Android or the browser, and produce a deployable static web build.">
+<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/web/#article","headline":"npm & React Native Commands — Metro, run ios/android/web, build","description":"Field-tested npm scripts for a React Native / Expo project: start the Metro dev server, run on iOS, Android or the browser, and produce a deployable static web build.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/web/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"react native npm commands, npm start metro, npm run ios android web, npm run build:web, expo dev server"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"Web / React Native","item":"https://hismaili.github.io/commands-cheat-sheet/web/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/web/#faq","mainEntity":[{"@type":"Question","name":"`ios`/`android`/`web` run commands hang or can't connect","acceptedAnswer":{"@type":"Answer","text":"Start the Metro dev server first (npm start)"}},{"@type":"Question","name":"Need the app in a browser for quick iteration","acceptedAnswer":{"@type":"Answer","text":"npm run web"}},{"@type":"Question","name":"Need a deployable static bundle, not a dev server","acceptedAnswer":{"@type":"Answer","text":"npm run build:web"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<a href="../#sheets">Sheets</a>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#pipeline">How it is made</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Web / React Native</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 5 commands &middot; 3 symptoms &middot; traced to source</p>
+<h1>Web Cheat Sheet</h1>
+<p class="lede">Start Metro first — every other script in the project assumes it is already up in another terminal.</p>
+</div>
+<div class="doc">
+<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#npm-react-native-dev-server">NPM / React Native — Dev Server</a></li><li><a href="#npm-react-native-run">NPM / React Native — Run</a></li><li><a href="#npm-react-native-build">NPM / React Native — Build</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
+<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
+<div class="prose"><section id="npm-react-native-dev-server"><h2 id="npm-react-native-dev-server">NPM / React Native — Dev Server</h2><p>Metro won't hot-reload anything until it's actually running — every other command in this project (<code>ios</code>, <code>android</code>, <code>web</code>) assumes this server is already up in another terminal.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Start the React Native/Expo development (Metro) server</span>
+npm start</code></pre></div></section>
+<section id="npm-react-native-run"><h2 id="npm-react-native-run">NPM / React Native — Run</h2><p><code>ios</code> and <code>android</code> compile a native shell around the JS bundle and launch it on a simulator/emulator or attached device; <code>web</code> skips the native shell entirely and serves the same app straight to a browser through the dev server.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Build and run the app on an iOS simulator or device</span>
+npm run ios
+
+<span class="c"># Build and run the app on an Android emulator or device</span>
+npm run android
+
+<span class="c"># Run the app in a web browser via the dev server</span>
+npm run web</code></pre></div></section>
+<section id="npm-react-native-build"><h2 id="npm-react-native-build">NPM / React Native — Build</h2><p>The dev server is fine for iteration but never ships — <code>build:web</code> is the one command that produces static output fit to deploy.</p>
+<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Produce a production web build</span>
+npm run build:web</code></pre></div></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-ios-android-web-run-commands-hang-or-can-t-connect"><h3 class="faq__q"><a href="#q-ios-android-web-run-commands-hang-or-can-t-connect"><code>ios</code>/<code>android</code>/<code>web</code> run commands hang or can't connect</a></h3><p class="faq__a">Start the Metro dev server first (<code>npm start</code>)</p></div><div class="faq__item" id="q-need-the-app-in-a-browser-for-quick-iteration"><h3 class="faq__q"><a href="#q-need-the-app-in-a-browser-for-quick-iteration">Need the app in a browser for quick iteration</a></h3><p class="faq__a"><code>npm run web</code></p></div><div class="faq__item" id="q-need-a-deployable-static-bundle-not-a-dev-server"><h3 class="faq__q"><a href="#q-need-a-deployable-static-bundle-not-a-dev-server">Need a deployable static bundle, not a dev server</a></h3><p class="faq__a"><code>npm run build:web</code></p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<div class="related"><a href="../mobile/"><b>Mobile</b><span>Which build system are you actually invoking — the native toolchain, or Expo&#x27;s remote one? The docs you need differ.</span></a><a href="../api-testing/"><b>API Testing</b><span>A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</span></a><a href="../podman/"><b>Podman</b><span>Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Web / React Native]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div>
+</div></div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body></html>
