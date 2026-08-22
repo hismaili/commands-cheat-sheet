@@ -1,0 +1,16 @@
+# -- Jetbrains IDEs
+.idea
+*.iml
+
+# -- Anthropic claude AI
+.claude/
+.claude-plugin/
+
+# -- Raw command dumps: contain tokens, passwords, home paths, client names.
+# NEVER commit. Agents read these locally; commands.yml is the committed artifact.
+_sources/
+
+# -- Generated site
+site/dist/
+site/node_modules/
+site/.astro/
