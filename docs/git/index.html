@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git Commands — Two Remotes, SSH Identity, GitHub SAML SSO | commands-cheat-sheet</title>
+<meta name="description" content="Git commands for a laptop with several accounts: push one folder to two repositories, stop commit identity and SSH keys from cross-contaminating, and get past a GitHub SAML SSO denial that a correct SSH key alone will not fix.">
+<meta name="keywords" content="git multiple remotes, git remote set-url --add --push, ssh host alias multiple github accounts, IdentitiesOnly yes, git includeIf gitdir, github saml sso ssh key authorization">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/git/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="Git Commands — Two Remotes, SSH Identity, GitHub SAML SSO | commands-cheat-sheet">
+<meta property="og:description" content="Git commands for a laptop with several accounts: push one folder to two repositories, stop commit identity and SSH keys from cross-contaminating, and get past a GitHub SAML SSO denial that a correct SSH key alone will not fix.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/git/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Git Commands — Two Remotes, SSH Identity, GitHub SAML SSO | commands-cheat-sheet">
+<meta name="twitter:description" content="Git commands for a laptop with several accounts: push one folder to two repositories, stop commit identity and SSH keys from cross-contaminating, and get past a GitHub SAML SSO denial that a correct SSH key alone will not fix.">
+<meta name="theme-color" content="#080D16">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23080D16'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%235B9BF2' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<style>:root{--topic:#F05033}:root[data-theme="light"]{--topic:#B23A1F}.t-openshift{--topic:#F0665A}:root[data-theme="light"] .t-openshift{--topic:#C0392B}.t-oci{--topic:#F0913C}:root[data-theme="light"] .t-oci{--topic:#B45309}.t-linux{--topic:#DFBF45}:root[data-theme="light"] .t-linux{--topic:#8A6D0B}.t-mobile{--topic:#7FC44E}:root[data-theme="light"] .t-mobile{--topic:#3F7A22}.t-vault{--topic:#35C09B}:root[data-theme="light"] .t-vault{--topic:#0F7A62}.t-api-testing{--topic:#45C4DA}:root[data-theme="light"] .t-api-testing{--topic:#0E6E80}.t-web{--topic:#5B9BF2}:root[data-theme="light"] .t-web{--topic:#1D5FB8}.t-podman{--topic:#9C82F0}:root[data-theme="light"] .t-podman{--topic:#5B3FC4}.t-ruby{--topic:#EA6BAA}:root[data-theme="light"] .t-ruby{--topic:#A81E63}.t-git{--topic:#F05033}:root[data-theme="light"] .t-git{--topic:#B23A1F}.t-kafka{--topic:#8194A9}:root[data-theme="light"] .t-kafka{--topic:#5B6675}</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/git/#article","headline":"Git Commands — Two Remotes, SSH Identity, GitHub SAML SSO","description":"Git commands for a laptop with several accounts: push one folder to two repositories, stop commit identity and SSH keys from cross-contaminating, and get past a GitHub SAML SSO denial that a correct SSH key alone will not fix.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/git/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Expert","keywords":"git multiple remotes, git remote set-url --add --push, ssh host alias multiple github accounts, IdentitiesOnly yes, git includeIf gitdir, github saml sso ssh key authorization"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"Git","item":"https://hismaili.github.io/commands-cheat-sheet/git/"}]},{"@type":"FAQPage","@id":"https://hismaili.github.io/commands-cheat-sheet/git/#faq","mainEntity":[{"@type":"Question","name":"Push went to the wrong upstream","acceptedAnswer":{"@type":"Answer","text":"git remote -v, then push by name: git push <REMOTE> <BRANCH>"}},{"@type":"Question","name":"Same folder needs two upstreams","acceptedAnswer":{"@type":"Answer","text":"git remote add <REMOTE> git@<SSH_ALIAS>:<ORG>/<REPO>.git per destination"}},{"@type":"Question","name":"One push should hit two mirrors","acceptedAnswer":{"@type":"Answer","text":"git remote set-url --add --push <REMOTE> … once per URL, original included first"}},{"@type":"Question","name":"Fan-out push only reaches one repo","acceptedAnswer":{"@type":"Answer","text":"git remote get-url --all --push <REMOTE> — the original URL was probably never added explicitly"}},{"@type":"Question","name":"`git remote -v` doesn't explain the behaviour","acceptedAnswer":{"@type":"Answer","text":"git config --get-regexp '^remote\\.'"}},{"@type":"Question","name":"Commits carry the wrong name/email","acceptedAnswer":{"@type":"Answer","text":"git config user.name/user.email locally (no --global), verify with git config --local --list"}},{"@type":"Question","name":"Wrong identity keeps coming back after being set","acceptedAnswer":{"@type":"Answer","text":"It is inherited: git config --global --list"}},{"@type":"Question","name":"Did the identity actually get used?","acceptedAnswer":{"@type":"Answer","text":"git log -1 --format='%an <%ae>'"}},{"@type":"Question","name":"Setting identity per repo doesn't scale","acceptedAnswer":{"@type":"Answer","text":"[includeIf \"gitdir:~/Projects/work/\"] in ~/.gitconfig"}},{"@type":"Question","name":"Two accounts on one provider","acceptedAnswer":{"@type":"Answer","text":"One key per account (ssh-keygen -t ed25519 -f ~/.ssh/<KEY_NAME>) + a Host alias each"}},{"@type":"Question","name":"SSH authenticates as the wrong account","acceptedAnswer":{"@type":"Answer","text":"IdentitiesOnly yes on the alias; confirm with ssh -vT git@<SSH_ALIAS>"}},{"@type":"Question","name":"Alias configured but ignored","acceptedAnswer":{"@type":"Answer","text":"The remote URL still names the bare host — git remote set-url <REMOTE> git@<SSH_ALIAS>:…"}},{"@type":"Question","name":"Repointed onto an alias, but pushes still cross the bare host","acceptedAnswer":{"@type":"Answer","text":"set-url only rewrites the fetch URL when a pushurl already exists — check with git remote get-url --all --push <REMOTE>"}},{"@type":"Question","name":"Need the alias's real target without connecting","acceptedAnswer":{"@type":"Answer","text":"ssh -G git@<SSH_ALIAS> \\"}},{"@type":"Question","name":"`ssh -T` succeeds, repository access denied","acceptedAnswer":{"@type":"Answer","text":"Authorization, not authentication — git ls-remote git@<SSH_ALIAS>:<ORG>/<REPO>.git to confirm, fix in GitHub SSO settings"}},{"@type":"Question","name":"SAML org missing from the SSO authorization list","acceptedAnswer":{"@type":"Answer","text":"Establish the session at https://github.com/orgs/<ORG>/sso first, then re-check the key"}},{"@type":"Question","name":"Chasing an SSH failure through the Keychain","acceptedAnswer":{"@type":"Answer","text":"Wrong layer — git config --global credential.helper serves HTTPS only"}},{"@type":"Question","name":"Stale HTTPS credential cached","acceptedAnswer":{"@type":"Answer","text":"git credential-osxkeychain erase (deletes it; token may need reissuing)"}},{"@type":"Question","name":"HTTPS clone rejects the password","acceptedAnswer":{"@type":"Answer","text":"It wants a personal access token, and for a SAML org one authorized for that org"}}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<button class="burger" type="button" data-drawer aria-controls="rail" aria-expanded="false">
+<span></span><span></span><span></span><span class="sr">Sheets and search</span>
+</button>
+<a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<button class="findbtn" type="button" data-palette-open>
+<span aria-hidden="true">&#9906;</span> Search <kbd>&#8984;K</kbd>
+</button>
+<a href="../symptoms/">Symptoms</a>
+<a class="opt" href="../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><div class="app"><aside class="rail" id="rail" data-index="../search-index.json" data-up="../" aria-label="Sheets and search">
+<div class="rail__in">
+<form class="sf" role="search" data-search onsubmit="return false">
+<label class="sr" for="sf-input">Search every command</label>
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input id="sf-input" class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search commands" aria-expanded="false" aria-controls="sf-results" role="combobox">
+<kbd class="sf__kbd">/</kbd>
+</div>
+<div class="sf__results" id="sf-results" role="listbox" hidden></div>
+</form>
+<h4>Sheets</h4>
+<ul class="rail__sheets"><li><a class="t-openshift" href="../openshift/"><i class="dot"></i><span>OpenShift</span><b>78</b></a></li><li><a class="t-linux" href="../linux/"><i class="dot"></i><span>Linux</span><b>15</b></a></li><li><a class="t-podman" href="../podman/"><i class="dot"></i><span>Podman</span><b>14</b></a></li><li><a class="t-vault" href="../vault/"><i class="dot"></i><span>Vault</span><b>7</b></a></li><li><a class="t-oci" href="../oci/"><i class="dot"></i><span>Oracle Cloud (OCI)</span><b>8</b></a></li><li><a class="t-web" href="../web/"><i class="dot"></i><span>Web / React Native</span><b>5</b></a></li><li><a class="t-mobile" href="../mobile/"><i class="dot"></i><span>Mobile</span><b>3</b></a></li><li><a class="t-ruby" href="../ruby/"><i class="dot"></i><span>Ruby</span><b>6</b></a></li><li><a class="t-api-testing" href="../api-testing/"><i class="dot"></i><span>API Testing</span><b>2</b></a></li><li><a class="t-git aria-current="page"" href="../git/"><i class="dot"></i><span>Git</span><b>31</b></a></li><li><a class="t-kafka rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Kafka</span><b>&mdash;</b></a></li></ul>
+<h4>On this page</h4><ul class="rail__toc"><li><a href="#which-repository-am-i-standing-in">Which repository am I standing in?</a></li><li><a href="#one-folder-two-repositories">One folder, two repositories</a></li><li><a href="#one-push-two-destinations">One push, two destinations</a></li><li><a href="#reading-what-the-remotes-are-actually-set-to">Reading what the remotes are actually set to</a></li><li><a href="#git-commits-under-the-wrong-name">Git commits under the wrong name</a></li><li><a href="#setting-identity-per-repository-does-not-scale">Setting identity per repository does not scale</a></li><li><a href="#two-accounts-on-the-same-provider">Two accounts on the same provider</a></li><li><a href="#the-remote-still-points-at-the-bare-host">The remote still points at the bare host</a></li><li><a href="#ssh-connects-but-as-which-account">SSH connects — but as which account?</a></li><li><a href="#ssh-works-but-the-organization-still-says-no">SSH works but the organization still says no</a></li><li><a href="#https-instead-of-ssh-tokens-and-the-keychain">HTTPS instead of SSH: tokens and the Keychain</a></li><li><a href="#when-a-push-fails-walk-the-chain">When a push fails, walk the chain</a></li><li><a href="#symptoms">Symptom → move</a></li><li><a href="#next">Related sheets</a></li></ul>
+<h4>More</h4>
+<ul class="rail__more"><li><a href="../symptoms/">Every symptom</a></li><li><a href="../#pipeline">How a sheet is made</a></li><li><a href="../#ask">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star on GitHub</a></li>
+</ul>
+</div>
+</aside><div class="app__body"><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Git</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> 31 commands &middot; 19 symptoms &middot; traced to source</p>
+<h1>Git Cheat Sheet</h1>
+<p class="lede">Three layers get confused with each other: who authored the commit, which key authenticates, and whether the organization authorizes you at all.</p>
+</div>
+<div class="doc"><div class="prose"><section id="overview"><p>A push that goes to the wrong place, or comes back refused, is almost never one problem. Three independent layers have to line up, and each one fails with a different symptom:</p>
+<p>1. <strong>Commit identity</strong> — the name and email git stamps on a commit (<code>user.name</code> / <code>user.email</code>). Nothing checks it. It is metadata, and it can be wrong on every commit while pushes succeed. 2. <strong>SSH authentication</strong> — which key SSH offers, and therefore which provider account you are. This is what <code>ssh -T</code> answers: <em>I am GitHub user X.</em> 3. <strong>Organization authorization</strong> — whether that account's key is allowed to reach a particular org's repositories. Under SAML SSO this is a second, separate gate, and passing gate 2 tells you nothing about it.</p>
+<p>Identity belongs to the project. Authentication belongs to the account. The remote URL connects the two.</p></section>
+<section id="which-repository-am-i-standing-in"><h2 id="which-repository-am-i-standing-in">Which repository am I standing in?</h2><p>Most wrong-identity pushes are explained by being in a different repository than you thought. Establish the ground truth before touching any configuration.</p>
+<div class="cmd" id="c-1"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Print the root of the repository you are actually in</span>
+git rev-parse --show-toplevel
+
+<span class="c"># Working tree state of that repository</span>
+git status
+
+<span class="c"># The branch you are about to push somewhere named</span>
+git branch --show-current</code></pre></div>
+<hr class="perf"></section>
+<section id="one-folder-two-repositories"><h2 id="one-folder-two-repositories">One folder, two repositories</h2><p>A single working directory and a single <code>.git</code> can serve two upstreams — no duplicated folder, no deleting <code>.git</code>. Give each remote a meaningful name (<code>personal</code>, <code>company</code>) rather than a positional one, and every push becomes a deliberate choice of destination.</p>
+<div class="cmd" id="c-2"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Orientation: every remote with its fetch and push URLs</span>
+git remote -v
+
+<span class="c"># Attach a second repository as an independently named remote</span>
+git remote add &lt;REMOTE&gt; git@github.com:&lt;ORG&gt;/&lt;REPO&gt;.git
+
+<span class="c"># Same, but routed through a per-account SSH host alias so this</span>
+<span class="c"># upstream authenticates with its own key</span>
+git remote add &lt;REMOTE&gt; git@&lt;SSH_ALIAS&gt;:&lt;ORG&gt;/&lt;REPO&gt;.git
+
+<span class="c"># Push one branch to one explicitly chosen remote</span>
+git push &lt;REMOTE&gt; &lt;BRANCH&gt;</code></pre></div>
+<p>Named remotes plus per-account aliases is the recommended setup when the two repositories belong to different GitHub accounts — it is what stops company code from landing in a personal repository by reflex.</p>
+<hr class="perf"></section>
+<section id="one-push-two-destinations"><h2 id="one-push-two-destinations">One push, two destinations</h2><p>When the two repositories are mirrors rather than different projects, a single remote can carry several push URLs and fan out on every <code>git push</code>.</p>
+<div class="cmd" id="c-3"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Add an additional push URL to one remote (run once per destination)</span>
+git remote set-url --add --push &lt;REMOTE&gt; git@github.com:&lt;ORG&gt;/&lt;REPO&gt;.git</code></pre></div>
+<p><strong>Consequence —</strong> the first <code>--add --push</code> on a remote displaces the implicit push URL, so adding only the new destination silently stops pushing to the original repository. Add the original as an explicit push URL too — it just has to be there, before or after the new one. Fetch URLs and push URLs are separate concepts, so <code>git pull</code> is unaffected and keeps using the single fetch URL. Confirm the fan-out actually reaches every destination with <code>git remote get-url --all --push &lt;REMOTE&gt;</code>.</p>
+<hr class="perf"></section>
+<section id="reading-what-the-remotes-are-actually-set-to"><h2 id="reading-what-the-remotes-are-actually-set-to">Reading what the remotes are actually set to</h2><p><code>git remote -v</code> is a summary. When it does not explain the behaviour you are seeing, read the configuration directly.</p>
+<div class="cmd" id="c-4"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Every push URL attached to a remote — confirms a fan-out really fans out</span>
+git remote get-url --all --push &lt;REMOTE&gt;
+
+<span class="c"># One remote's URL — reveals whether it goes through a plain host or an alias</span>
+git remote get-url &lt;REMOTE&gt;
+
+<span class="c"># The complete remote section of git config, fetch and push URLs included</span>
+git config --get-regexp '^remote\.'</code></pre></div>
+<hr class="perf"></section>
+<section id="git-commits-under-the-wrong-name"><h2 id="git-commits-under-the-wrong-name">Git commits under the wrong name</h2><p>This is layer one, and it is entirely local. A global identity is a fine default, but it must stop being authoritative the moment a second account exists — the absence of <code>--global</code> below is the whole point.</p>
+<div class="cmd" id="c-5"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># What every repository is silently inheriting</span>
+git config --global --list
+
+<span class="c"># Set the commit author for THIS repository only</span>
+git config user.name "&lt;NAME&gt;"
+git config user.email "&lt;EMAIL&gt;"
+
+<span class="c"># Confirm the local values actually landed instead of falling through to global</span>
+git config --local --list
+
+<span class="c"># The effective identity — what git will stamp on the next commit, wherever it came from</span>
+git config user.name
+git config user.email
+
+<span class="c"># Prove it was used: author name and email on the latest commit</span>
+git log -1 --format='%an &lt;%ae&gt;'</code></pre></div>
+<hr class="perf"></section>
+<section id="setting-identity-per-repository-does-not-scale"><h2 id="setting-identity-per-repository-does-not-scale">Setting identity per repository does not scale</h2><p>Once there are many repositories, configuring each one by hand is repetitive and easy to forget. Git can make identity depend on the directory the repository lives in, via <code>includeIf</code> — configuration, not a command.</p>
+<p>In <code>~/.gitconfig</code>:</p>
+<div class="cmd" id="c-6"><div class="cmd__top"><span class="cmd__lang">ini</span><button class="copy" type="button">COPY</button></div><pre><code>[includeIf "gitdir:~/Projects/work/"]
+    path = ~/.gitconfig-work
+
+[includeIf "gitdir:~/Projects/personal/"]
+    path = ~/.gitconfig-personal</code></pre></div>
+<p>Then <code>~/.gitconfig-work</code>:</p>
+<div class="cmd" id="c-7"><div class="cmd__top"><span class="cmd__lang">ini</span><button class="copy" type="button">COPY</button></div><pre><code>[user]
+    name = &lt;NAME&gt;
+    email = &lt;WORK_EMAIL&gt;</code></pre></div>
+<p>And <code>~/.gitconfig-personal</code>:</p>
+<div class="cmd" id="c-8"><div class="cmd__top"><span class="cmd__lang">ini</span><button class="copy" type="button">COPY</button></div><pre><code>[user]
+    name = &lt;NAME&gt;
+    email = &lt;PERSONAL_EMAIL&gt;</code></pre></div>
+<p>The trailing slash on the <code>gitdir:</code> pattern matters — it is what makes the rule apply to everything beneath that directory.</p>
+<hr class="perf"></section>
+<section id="two-accounts-on-the-same-provider"><h2 id="two-accounts-on-the-same-provider">Two accounts on the same provider</h2><p>This is layer two. <code>github.com</code> can only mean one account to a bare SSH connection, so give each account its own key and its own host alias. The alias is a routing rule, not a real hostname.</p>
+<div class="cmd" id="c-9"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># One dedicated key per account, at a named path</span>
+ssh-keygen -t ed25519 \
+  -C "&lt;EMAIL&gt;" \
+  -f ~/.ssh/&lt;KEY_NAME&gt;</code></pre></div>
+<p>Repeat once per account. Only the <code>.pub</code> file is registered with the provider; the private key never leaves the machine. <code>ssh-keygen</code> prompts before overwriting an existing <code>-f</code> path.</p>
+<p>Then, in <code>~/.ssh/config</code>:</p>
+<div class="cmd" id="c-10"><div class="cmd__top"><span class="cmd__lang">ssh-config</span><button class="copy" type="button">COPY</button></div><pre><code>Host github-personal
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github_personal
+    IdentitiesOnly yes
+
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github_work
+    IdentitiesOnly yes
+
+Host gitlab-work
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_gitlab_work
+    IdentitiesOnly yes</code></pre></div>
+<p><code>github-personal</code>, <code>github-work</code>, <code>gitlab-work</code>, and the <code>id_ed25519_*</code> key files are one concrete instantiation of the <code>&lt;SSH_ALIAS&gt;</code> and <code>&lt;KEY_NAME&gt;</code> placeholders used throughout this sheet — pick your own alias names and key filenames, one pair per account.</p>
+<p><code>IdentitiesOnly yes</code> is the line that makes this deterministic. Without it the SSH agent may offer several keys, and the provider authenticates you as whichever one it accepts first — which is how you end up as the wrong account despite "correct" configuration. With it, the alias uses that identity and nothing else.</p>
+<hr class="perf"></section>
+<section id="the-remote-still-points-at-the-bare-host"><h2 id="the-remote-still-points-at-the-bare-host">The remote still points at the bare host</h2><p>An alias only takes effect if the remote URL names it. <code>github-work</code>, not <code>github.com</code>, in the host segment.</p>
+<div class="cmd" id="c-11"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Repoint an existing remote onto a per-account SSH host alias</span>
+git remote set-url &lt;REMOTE&gt; git@&lt;SSH_ALIAS&gt;:&lt;ORG&gt;/&lt;REPO&gt;.git</code></pre></div>
+<p><strong>Consequence —</strong> this rewrites <code>remote.&lt;REMOTE&gt;.url</code> — the fetch URL, and the push URL <em>only while no explicit push URL exists</em>. If this remote already carries push URLs added with <code>git remote set-url --add --push</code> (the previous section), those <code>remote.&lt;REMOTE&gt;.pushurl</code> entries are untouched: fetches move to the alias, but pushes keep going to whatever the old push URLs pointed at. A repoint that looks successful can leave every push still crossing the bare host. Confirm with <code>git remote get-url --all --push &lt;REMOTE&gt;</code> after repointing — not just <code>git remote get-url</code>. The alias segment that must match a <code>Host</code> entry in <code>~/.ssh/config</code> is <code>github-work</code>, not <code>github.com</code>.</p>
+<hr class="perf"></section>
+<section id="ssh-connects-but-as-which-account"><h2 id="ssh-connects-but-as-which-account">SSH connects — but as which account?</h2><p>Ask the provider who you are before you push. If the wrong account answers, the key is bound to the wrong identity and nothing further is worth trying.</p>
+<div class="cmd" id="c-12"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Which account does this alias authenticate as?</span>
+ssh -T git@&lt;SSH_ALIAS&gt;
+
+<span class="c"># Same test, verbose — shows which identity file SSH actually offered</span>
+ssh -vT git@&lt;SSH_ALIAS&gt;
+
+<span class="c"># Effective config for an alias, without opening a connection:</span>
+<span class="c"># real hostname, user, identity file, IdentitiesOnly</span>
+ssh -G git@&lt;SSH_ALIAS&gt; | grep -E 'hostname|user|identityfile|identitiesonly'</code></pre></div>
+<p>In the verbose output, look for the <code>Offering public key:</code> line. ssh prints the absolute path there, never a <code>~/</code> shorthand, so match on the key filename (<code>&lt;KEY_NAME&gt;</code>) rather than a tilde form that will never appear.</p>
+<p>A success line — <code>Hi &lt;GITHUB_USER&gt;! You've successfully authenticated...</code> — proves <strong>identity only</strong>. It does not prove access to any repository or any organization. That is the next section.</p>
+<hr class="perf"></section>
+<section id="ssh-works-but-the-organization-still-says-no"><h2 id="ssh-works-but-the-organization-still-says-no">SSH works but the organization still says no</h2><p>Layer three. The SSH chain (repository → alias → key → account) can be entirely correct and the push still fails:</p>
+<div class="cmd" id="c-13"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code>ERROR: The '&lt;ORG&gt;' organization has enabled or enforced SAML SSO.
+To access this repository, you must use the HTTPS remote with a personal access token
+or SSH with an SSH key and passphrase that has been authorized for this organization.</code></pre></div>
+<p>SSH authentication and organization authorization are different claims. The key proves <em>I am GitHub user X</em>; SAML SSO must additionally establish <em>GitHub user X is authorized for organization Y</em>. Do not switch protocols because of this error — SSH remains the cleanest approach for a multi-account workstation, and the HTTPS path has the same second gate, just with a different credential.</p>
+<div class="cmd" id="c-14"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Can the configured remote be reached? Refs coming back means</span>
+<span class="c"># authentication AND repository authorization both work</span>
+git ls-remote &lt;REMOTE&gt;
+
+<span class="c"># Test one specific repository by full URL, bypassing local remote config</span>
+git ls-remote git@&lt;SSH_ALIAS&gt;:&lt;ORG&gt;/&lt;REPO&gt;.git
+
+<span class="c"># Only now, with every layer confirmed</span>
+git push</code></pre></div>
+<p><code>ssh -T</code> succeeding while <code>git ls-remote</code> returns the SAML error is the signature of an unauthorized key: it is registered with the account but not authorized for the organization. <strong>The fix is on GitHub, not in git or ssh</strong> — Settings → SSH and GPG keys, find the key this repository uses, and use the organization's SSO authorization control. Registering a public key with GitHub does not authorize it for an org; you need both.</p>
+<p>If the organization does not appear in that list, establish the SAML session first by visiting <code>https://github.com/orgs/&lt;ORG&gt;/sso</code>, authenticate through the corporate identity provider, then re-check the key's SSO authorization. The exact flow depends on the organization's identity-provider configuration.</p>
+<hr class="perf"></section>
+<section id="https-instead-of-ssh-tokens-and-the-keychain"><h2 id="https-instead-of-ssh-tokens-and-the-keychain">HTTPS instead of SSH: tokens and the Keychain</h2><p>The HTTPS path has its own credential layer. Knowing whether it is even involved saves a lot of wasted deletion.</p>
+<div class="cmd" id="c-15"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Which credential helper is git using?</span>
+git config --global credential.helper
+
+<span class="c"># Clone over HTTPS — supply the GitHub username and a personal access</span>
+<span class="c"># token as the password, never the account password</span>
+git clone https://github.com/&lt;ORG&gt;/&lt;REPO&gt;.git</code></pre></div>
+<p><code>osxkeychain</code> serves the <strong>HTTPS path only</strong>. It has no part in SSH authentication, so clearing Keychain entries will never fix an SSH or SAML failure. For a SAML-enforcing organization the token must additionally be authorized for that organization.</p>
+<div class="cmd" id="c-16"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Drop the cached GitHub credential so the next HTTPS operation re-prompts</span>
+git credential-osxkeychain erase</code></pre></div>
+<p><strong>Consequence —</strong> the stored credential is deleted. If the token was not saved elsewhere it has to be reissued.</p>
+<div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>Uncertain — invocation left as written:</strong> the command reads its target from stdin. After running it you type <code>protocol=https</code>, then <code>host=github.com</code>, then an empty line. The source records those lines as prose rather than as part of the invocation, so a bare copy-paste appears to hang while it waits on stdin. Kept unmodified. The GUI equivalent is removing the <code>github.com</code> Internet Password entry in Keychain Access.</p></div>
+<hr class="perf"></section>
+<section id="when-a-push-fails-walk-the-chain"><h2 id="when-a-push-fails-walk-the-chain">When a push fails, walk the chain</h2><p>Do not start deleting credentials at random. Go left to right; the first step that disagrees with your expectation is the bug.</p>
+<p>1. <strong>Which repository am I in?</strong> — <code>git rev-parse --show-toplevel</code> 2. <strong>Which remote am I using?</strong> — <code>git remote -v</code> 3. <strong>Which commit identity will git use?</strong> — <code>git config user.name</code> and <code>git config user.email</code> 4. <strong>Which SSH host alias is in the URL?</strong> — <code>git remote get-url origin</code>, expecting <code>git@&lt;SSH_ALIAS&gt;:...</code> and not <code>git@github.com:...</code> when multiple accounts are in play 5. <strong>Which key is actually offered?</strong> — <code>ssh -vT git@&lt;SSH_ALIAS&gt;</code> 6. <strong>Can that account reach the repository?</strong> — <code>git ls-remote origin</code> 7. Only then — <code>git push</code></p>
+<hr class="perf"></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, phrased the way it appears in a terminal. Link to any one of them, or scan <a href="../symptoms/">all 67 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-push-went-to-the-wrong-upstream"><h3 class="faq__q"><a href="#q-push-went-to-the-wrong-upstream">Push went to the wrong upstream</a></h3><p class="faq__a"><code>git remote -v</code>, then push by name: <code>git push &lt;REMOTE&gt; &lt;BRANCH&gt;</code></p></div><div class="faq__item" id="q-same-folder-needs-two-upstreams"><h3 class="faq__q"><a href="#q-same-folder-needs-two-upstreams">Same folder needs two upstreams</a></h3><p class="faq__a"><code>git remote add &lt;REMOTE&gt; git@&lt;SSH_ALIAS&gt;:&lt;ORG&gt;/&lt;REPO&gt;.git</code> per destination</p></div><div class="faq__item" id="q-one-push-should-hit-two-mirrors"><h3 class="faq__q"><a href="#q-one-push-should-hit-two-mirrors">One push should hit two mirrors</a></h3><p class="faq__a"><code>git remote set-url --add --push &lt;REMOTE&gt; …</code> once per URL, original included first</p></div><div class="faq__item" id="q-fan-out-push-only-reaches-one-repo"><h3 class="faq__q"><a href="#q-fan-out-push-only-reaches-one-repo">Fan-out push only reaches one repo</a></h3><p class="faq__a"><code>git remote get-url --all --push &lt;REMOTE&gt;</code> — the original URL was probably never added explicitly</p></div><div class="faq__item" id="q-git-remote-v-doesn-t-explain-the-behaviour"><h3 class="faq__q"><a href="#q-git-remote-v-doesn-t-explain-the-behaviour"><code>git remote -v</code> doesn't explain the behaviour</a></h3><p class="faq__a"><code>git config --get-regexp '^remote\.'</code></p></div><div class="faq__item" id="q-commits-carry-the-wrong-name-email"><h3 class="faq__q"><a href="#q-commits-carry-the-wrong-name-email">Commits carry the wrong name/email</a></h3><p class="faq__a"><code>git config user.name</code>/<code>user.email</code> locally (no <code>--global</code>), verify with <code>git config --local --list</code></p></div><div class="faq__item" id="q-wrong-identity-keeps-coming-back-after-being-set"><h3 class="faq__q"><a href="#q-wrong-identity-keeps-coming-back-after-being-set">Wrong identity keeps coming back after being set</a></h3><p class="faq__a">It is inherited: <code>git config --global --list</code></p></div><div class="faq__item" id="q-did-the-identity-actually-get-used"><h3 class="faq__q"><a href="#q-did-the-identity-actually-get-used">Did the identity actually get used?</a></h3><p class="faq__a"><code>git log -1 --format='%an &lt;%ae&gt;'</code></p></div><div class="faq__item" id="q-setting-identity-per-repo-doesn-t-scale"><h3 class="faq__q"><a href="#q-setting-identity-per-repo-doesn-t-scale">Setting identity per repo doesn't scale</a></h3><p class="faq__a"><code>[includeIf "gitdir:~/Projects/work/"]</code> in <code>~/.gitconfig</code></p></div><div class="faq__item" id="q-two-accounts-on-one-provider"><h3 class="faq__q"><a href="#q-two-accounts-on-one-provider">Two accounts on one provider</a></h3><p class="faq__a">One key per account (<code>ssh-keygen -t ed25519 -f ~/.ssh/&lt;KEY_NAME&gt;</code>) + a <code>Host</code> alias each</p></div><div class="faq__item" id="q-ssh-authenticates-as-the-wrong-account"><h3 class="faq__q"><a href="#q-ssh-authenticates-as-the-wrong-account">SSH authenticates as the wrong account</a></h3><p class="faq__a"><code>IdentitiesOnly yes</code> on the alias; confirm with <code>ssh -vT git@&lt;SSH_ALIAS&gt;</code></p></div><div class="faq__item" id="q-alias-configured-but-ignored"><h3 class="faq__q"><a href="#q-alias-configured-but-ignored">Alias configured but ignored</a></h3><p class="faq__a">The remote URL still names the bare host — <code>git remote set-url &lt;REMOTE&gt; git@&lt;SSH_ALIAS&gt;:…</code></p></div><div class="faq__item" id="q-repointed-onto-an-alias-but-pushes-still-cross-the-bare-host"><h3 class="faq__q"><a href="#q-repointed-onto-an-alias-but-pushes-still-cross-the-bare-host">Repointed onto an alias, but pushes still cross the bare host</a></h3><p class="faq__a"><code>set-url</code> only rewrites the fetch URL when a <code>pushurl</code> already exists — check with <code>git remote get-url --all --push &lt;REMOTE&gt;</code></p></div><div class="faq__item" id="q-need-the-alias-s-real-target-without-connecting"><h3 class="faq__q"><a href="#q-need-the-alias-s-real-target-without-connecting">Need the alias's real target without connecting</a></h3><p class="faq__a">`ssh -G git@&lt;SSH_ALIAS&gt; \</p></div><div class="faq__item" id="q-ssh-t-succeeds-repository-access-denied"><h3 class="faq__q"><a href="#q-ssh-t-succeeds-repository-access-denied"><code>ssh -T</code> succeeds, repository access denied</a></h3><p class="faq__a">Authorization, not authentication — <code>git ls-remote git@&lt;SSH_ALIAS&gt;:&lt;ORG&gt;/&lt;REPO&gt;.git</code> to confirm, fix in GitHub SSO settings</p></div><div class="faq__item" id="q-saml-org-missing-from-the-sso-authorization-list"><h3 class="faq__q"><a href="#q-saml-org-missing-from-the-sso-authorization-list">SAML org missing from the SSO authorization list</a></h3><p class="faq__a">Establish the session at <code>https://github.com/orgs/&lt;ORG&gt;/sso</code> first, then re-check the key</p></div><div class="faq__item" id="q-chasing-an-ssh-failure-through-the-keychain"><h3 class="faq__q"><a href="#q-chasing-an-ssh-failure-through-the-keychain">Chasing an SSH failure through the Keychain</a></h3><p class="faq__a">Wrong layer — <code>git config --global credential.helper</code> serves HTTPS only</p></div><div class="faq__item" id="q-stale-https-credential-cached"><h3 class="faq__q"><a href="#q-stale-https-credential-cached">Stale HTTPS credential cached</a></h3><p class="faq__a"><code>git credential-osxkeychain erase</code> (deletes it; token may need reissuing)</p></div><div class="faq__item" id="q-https-clone-rejects-the-password"><h3 class="faq__q"><a href="#q-https-clone-rejects-the-password">HTTPS clone rejects the password</a></h3><p class="faq__a">It wants a personal access token, and for a SAML org one authorized for that org</p></div></div></section>
+<section id="next">
+<h2 id="next">Related sheets</h2>
+<p>Work rarely stays inside one tool. These are the sheets most often open alongside this one.</p>
+<div class="related"><a class="t-linux" href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a><a class="t-openshift" href="../openshift/"><b>OpenShift</b><span>Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</span></a><a class="t-oci" href="../oci/"><b>Oracle Cloud (OCI)</b><span>Get the CLI on the box, get ~/.oci/config written, and get SSH to stop rejecting a perfectly good key.</span></a></div>
+<div class="pagecta">
+<p><strong>Did this resolve it?</strong> Stars indicate which sheets are worth extending. If a command here is wrong, or destructive without saying so, open an issue — I would rather fix it than have someone find out on a live system.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+<a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
+<a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Git]%20" target="_blank" rel="noopener">Report a wrong command</a>
+</div>
+</div>
+</section></div></div>
+</div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="../symptoms/">Every symptom, one page</a></li>
+<li><a href="../#pipeline">How a sheet is made</a></li>
+<li><a href="../#ask">Ask a question</a></li>
+<li><a href="../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li><li><a href="../git/">Git</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Every command recorded on a working system and traced to its source.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+</div></div>
+<div class="palette" data-palette hidden>
+<div class="palette__scrim" data-palette-close></div>
+<div class="palette__box" role="dialog" aria-modal="true" aria-label="Search every command">
+<form class="sf sf--big" role="search" data-search onsubmit="return false">
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search 138 commands, 48 symptoms" aria-expanded="false" role="combobox">
+<button class="palette__esc" type="button" data-palette-close>esc</button>
+</div>
+<div class="sf__results" role="listbox" hidden></div>
+<p class="palette__hint"><kbd>&#8593;</kbd><kbd>&#8595;</kbd> move &nbsp; <kbd>&#8629;</kbd> open &nbsp; <kbd>tab</kbd> complete</p>
+</form>
+</div>
+</div>
+<script src="../assets/site.js" defer></script>
+</body></html>

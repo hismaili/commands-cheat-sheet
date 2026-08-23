@@ -80,10 +80,15 @@ TOPICS = [
          blurb="A browser's CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.",
          kw="curl cors preflight options, access-control-allow-origin test, oauth2 password grant curl, curl bearer token api testing",
          related=["vault", "web", "openshift"]),
+    dict(slug="git", name="Git", file="git/git.md",
+         title="Git Commands \u2014 Two Remotes, SSH Identity, GitHub SAML SSO",
+         desc="Git commands for a laptop with several accounts: push one folder to two repositories, stop commit identity and SSH keys from cross-contaminating, and get past a GitHub SAML SSO denial that a correct SSH key alone will not fix.",
+         blurb="Three layers get confused with each other: who authored the commit, which key authenticates, and whether the organization authorizes you at all.",
+         kw="git multiple remotes, git remote set-url --add --push, ssh host alias multiple github accounts, IdentitiesOnly yes, git includeIf gitdir, github saml sso ssh key authorization",
+         related=["linux", "openshift", "oci"]),
 ]
 # Directories that exist but hold no recorded sessions yet.
 PLANNED = [
-    dict(slug="git", name="Git", why="No session has been recorded yet."),
     dict(slug="kafka", name="Kafka", why="No session has been recorded yet."),
 ]
 
@@ -101,7 +106,7 @@ HUES = {
     "web":         ("#5B9BF2", "#1D5FB8"),
     "podman":      ("#9C82F0", "#5B3FC4"),
     "ruby":        ("#EA6BAA", "#A81E63"),
-    "git":         ("#8194A9", "#5B6675"),
+    "git":         ("#F05033", "#B23A1F"),
     "kafka":       ("#8194A9", "#5B6675"),
 }
 SITE_HUE = ("#5B9BF2", "#1D5FB8")

@@ -39,7 +39,7 @@ Layout here is `nested` (`<topic>/<topic>.md`) and `sources_dir` is `_sources`. 
 
 ## Non-negotiable rules
 
-- **Source-only.** A command may only appear in a sheet if it traces to a dump line via `source_ref`. Never invent, never fill gaps from general knowledge. `git/` and `kafka/` are empty directories with empty `_sources/` — that is correct; they stay empty until dumps exist.
+- **Source-only.** A command may only appear in a sheet if it traces to a dump line via `source_ref`. Never invent, never fill gaps from general knowledge. `kafka/` is an empty directory with an empty `_sources/` — that is correct; it stays empty until dumps exist.
 - **`_sources/` is gitignored and holds unredacted secrets.** Sanitising happens once, at the analyst step. Both `command` and `verbatim` in `commands.yml` must be free of credentials and identity (home paths, usernames, private IPs, internal hosts); specifics like namespaces and versions are parameterised in `command` (`<NAMESPACE>`) and kept real in `verbatim`.
 - **Two deterministic `PreToolUse` hooks** (`hooks/guard.py`) block writes, not model instructions: a secret/PII scan and a topic-boundary check (an `oc` command may not land in `vault.md`). Binary→topic ownership comes from the plugin's `tech-profiles/<tech>.yml`, not from the guard.
 - `.claude/` and `.claude-plugin/` are gitignored — local plugin wiring is not part of the published repo.
