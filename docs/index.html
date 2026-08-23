@@ -15,13 +15,13 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="commands-cheat-sheet — Commands that were run, not written">
 <meta name="twitter:description" content="Cheat sheets for OpenShift, Linux, Podman, Vault, OCI, npm, Flutter, Ruby and curl built only from recorded terminal sessions. Every command traces back to the line it was typed on, and every destructive one says what it actually costs you.">
-<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#080D16">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23080D16'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%235B9BF2' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/site.css">
+<style>:root{--topic:#5B9BF2}:root[data-theme="light"]{--topic:#1D5FB8}.t-openshift{--topic:#F0665A}:root[data-theme="light"] .t-openshift{--topic:#C0392B}.t-oci{--topic:#F0913C}:root[data-theme="light"] .t-oci{--topic:#B45309}.t-linux{--topic:#DFBF45}:root[data-theme="light"] .t-linux{--topic:#8A6D0B}.t-mobile{--topic:#7FC44E}:root[data-theme="light"] .t-mobile{--topic:#3F7A22}.t-vault{--topic:#35C09B}:root[data-theme="light"] .t-vault{--topic:#0F7A62}.t-api-testing{--topic:#45C4DA}:root[data-theme="light"] .t-api-testing{--topic:#0E6E80}.t-web{--topic:#5B9BF2}:root[data-theme="light"] .t-web{--topic:#1D5FB8}.t-podman{--topic:#9C82F0}:root[data-theme="light"] .t-podman{--topic:#5B3FC4}.t-ruby{--topic:#EA6BAA}:root[data-theme="light"] .t-ruby{--topic:#A81E63}.t-git{--topic:#8194A9}:root[data-theme="light"] .t-git{--topic:#5B6675}.t-kafka{--topic:#8194A9}:root[data-theme="light"] .t-kafka{--topic:#5B6675}</style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
 {"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/",
@@ -139,47 +139,47 @@ done</code></pre>
 <h2>Pick the tool that is currently lying to you.</h2>
 <p class="lede">Every sheet opens with the failure it exists to answer, then the commands, then a symptom-to-move table you can scan in a hurry.</p>
 </div>
-<div class="sheets"><a class="sheet" href="openshift/">
+<div class="sheets"><a class="sheet t-openshift" href="openshift/">
 <span class="sheet__name">OpenShift</span>
 <p class="sheet__desc">Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</p>
 <span class="sheet__foot"><span>78 commands</span><span>8 symptoms</span><span class="haz">4 flagged destructive</span></span>
-</a><a class="sheet" href="linux/">
+</a><a class="sheet t-linux" href="linux/">
 <span class="sheet__name">Linux</span>
 <p class="sheet__desc">PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</p>
 <span class="sheet__foot"><span>15 commands</span><span>7 symptoms</span><span class="haz">1 flagged destructive</span></span>
-</a><a class="sheet" href="podman/">
+</a><a class="sheet t-podman" href="podman/">
 <span class="sheet__name">Podman</span>
 <p class="sheet__desc">Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</p>
 <span class="sheet__foot"><span>14 commands</span><span>14 symptoms</span><span class="haz">10 flagged destructive</span></span>
-</a><a class="sheet" href="vault/">
+</a><a class="sheet t-vault" href="vault/">
 <span class="sheet__name">Vault</span>
 <p class="sheet__desc">Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</p>
 <span class="sheet__foot"><span>7 commands</span><span>5 symptoms</span></span>
-</a><a class="sheet" href="oci/">
+</a><a class="sheet t-oci" href="oci/">
 <span class="sheet__name">Oracle Cloud (OCI)</span>
 <p class="sheet__desc">Get the CLI on the box, get ~/.oci/config written, and get SSH to stop rejecting a perfectly good key.</p>
 <span class="sheet__foot"><span>8 commands</span><span>4 symptoms</span></span>
-</a><a class="sheet" href="web/">
+</a><a class="sheet t-web" href="web/">
 <span class="sheet__name">Web / React Native</span>
 <p class="sheet__desc">Start Metro first — every other script in the project assumes it is already up in another terminal.</p>
 <span class="sheet__foot"><span>5 commands</span><span>3 symptoms</span></span>
-</a><a class="sheet" href="mobile/">
+</a><a class="sheet t-mobile" href="mobile/">
 <span class="sheet__name">Mobile</span>
 <p class="sheet__desc">Which build system are you actually invoking — the native toolchain, or Expo&#x27;s remote one? The docs you need differ.</p>
 <span class="sheet__foot"><span>3 commands</span><span>2 symptoms</span></span>
-</a><a class="sheet" href="ruby/">
+</a><a class="sheet t-ruby" href="ruby/">
 <span class="sheet__name">Ruby</span>
 <p class="sheet__desc">Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land somewhere PATH has never heard of.</p>
 <span class="sheet__foot"><span>6 commands</span><span>3 symptoms</span></span>
-</a><a class="sheet" href="api-testing/">
+</a><a class="sheet t-api-testing" href="api-testing/">
 <span class="sheet__name">API Testing</span>
 <p class="sheet__desc">A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</p>
 <span class="sheet__foot"><span>2 commands</span><span>2 symptoms</span></span>
-</a><a class="sheet sheet--empty" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BGit%5D%20" target="_blank" rel="noopener">
+</a><a class="sheet sheet--empty t-git" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BGit%5D%20" target="_blank" rel="noopener">
 <span class="sheet__name">Git</span>
 <p class="sheet__desc">The directory exists and the pipeline is configured for it. No session has been recorded yet. Open an issue and it moves up.</p>
 <span class="sheet__foot"><span>Not recorded yet</span><span>Request it &rarr;</span></span>
-</a><a class="sheet sheet--empty" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener">
+</a><a class="sheet sheet--empty t-kafka" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener">
 <span class="sheet__name">Kafka</span>
 <p class="sheet__desc">The directory exists and the pipeline is configured for it. No session has been recorded yet. Open an issue and it moves up.</p>
 <span class="sheet__foot"><span>Not recorded yet</span><span>Request it &rarr;</span></span>

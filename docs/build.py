@@ -85,6 +85,41 @@ PLANNED = [
     dict(slug="git", name="Git", why="No session has been recorded yet."),
     dict(slug="kafka", name="Kafka", why="No session has been recorded yet."),
 ]
+
+# Each sheet owns a hue taken from its own tool's world — Red Hat red, Oracle
+# orange, Tux yellow, Android green, Podman violet — so the colour tells you
+# where you are. The second value is the same hue darkened for the paper theme,
+# where the bright version would be unreadable on near-white.
+HUES = {
+    "openshift":   ("#F0665A", "#C0392B"),
+    "oci":         ("#F0913C", "#B45309"),
+    "linux":       ("#DFBF45", "#8A6D0B"),
+    "mobile":      ("#7FC44E", "#3F7A22"),
+    "vault":       ("#35C09B", "#0F7A62"),
+    "api-testing": ("#45C4DA", "#0E6E80"),
+    "web":         ("#5B9BF2", "#1D5FB8"),
+    "podman":      ("#9C82F0", "#5B3FC4"),
+    "ruby":        ("#EA6BAA", "#A81E63"),
+    "git":         ("#8194A9", "#5B6675"),
+    "kafka":       ("#8194A9", "#5B6675"),
+}
+SITE_HUE = ("#5B9BF2", "#1D5FB8")
+
+
+def hue_style(slug=None):
+    """A <style> block binding --topic. One hue for a topic page; the whole
+    set, class-scoped, for pages that show every sheet at once."""
+    if slug:
+        d, l = HUES.get(slug, SITE_HUE)
+        return ('<style>:root{--topic:%s}:root[data-theme="light"]{--topic:%s}</style>\n' % (d, l))
+    rules = [':root{--topic:%s}' % SITE_HUE[0],
+             ':root[data-theme="light"]{--topic:%s}' % SITE_HUE[1]]
+    for k, (d, l) in HUES.items():
+        rules.append('.t-%s{--topic:%s}' % (k, d))
+        rules.append(':root[data-theme="light"] .t-%s{--topic:%s}' % (k, l))
+    return "<style>" + "".join(rules) + "</style>\n"
+
+
 BY_SLUG = {t["slug"]: t for t in TOPICS}
 
 
@@ -256,7 +291,7 @@ def render(blocks, cmd_counter):
 # ---------------------------------------------------------------------------
 # Page chrome
 # ---------------------------------------------------------------------------
-def head(title, desc, path, kw="", extra_ld=""):
+def head(title, desc, path, kw="", extra_ld="", hue=""):
     up = "../" if path else ""
     canon = BASE + (path + "/" if path else "")
     return """<!doctype html>
@@ -275,19 +310,18 @@ def head(title, desc, path, kw="", extra_ld=""):
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="%(title)s">
 <meta name="twitter:description" content="%(desc)s">
-<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="data:image/svg+xml,%%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%%3E%%3Crect width='32' height='32' rx='4' fill='%%2317457E'/%%3E%%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%%23F5F5F0' text-anchor='middle'%%3E%%24%%3C/text%%3E%%3C/svg%%3E">
+<meta name="theme-color" content="#080D16">
+<link rel="icon" href="data:image/svg+xml,%%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%%3E%%3Crect width='32' height='32' rx='6' fill='%%23080D16'/%%3E%%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%%235B9BF2' text-anchor='middle'%%3E%%24%%3C/text%%3E%%3C/svg%%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="%(up)sassets/site.css">
-%(ld)s</head>
+%(hue)s%(ld)s</head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 """ % dict(title=html.escape(title), desc=html.escape(desc), canon=canon, up=up,
            kw=('<meta name="keywords" content="%s">\n' % html.escape(kw)) if kw else "",
-           ld=extra_ld)
+           ld=extra_ld, hue=hue)
 
 
 def masthead(path):
@@ -385,7 +419,8 @@ def build_topic(t, stats, patterns_all):
             '<div class="faq">%s</div></section>' % (stats["patterns"], "".join(faq)))
 
     rel = "".join(
-        '<a href="../%s/"><b>%s</b><span>%s</span></a>' % (BY_SLUG[r]["slug"], BY_SLUG[r]["name"], html.escape(BY_SLUG[r]["blurb"]))
+        '<a class="t-%s" href="../%s/"><b>%s</b><span>%s</span></a>'
+        % (BY_SLUG[r]["slug"], BY_SLUG[r]["slug"], BY_SLUG[r]["name"], html.escape(BY_SLUG[r]["blurb"]))
         for r in t["related"] if r in BY_SLUG)
 
     body.append("""<section id="next">
@@ -423,7 +458,8 @@ def build_topic(t, stats, patterns_all):
            kw=jsonstr(t["kw"]), nm=jsonstr(t["name"]),
            faq=("," + faq_ld) if faq_ld else "")
 
-    page = head(t["title"] + " | commands-cheat-sheet", t["desc"], t["slug"], t["kw"], ld)
+    page = head(t["title"] + " | commands-cheat-sheet", t["desc"], t["slug"], t["kw"], ld,
+                hue=hue_style(t["slug"]))
     page += masthead(t["slug"])
     page += """<main id="main"><div class="shell">
 <nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>%(name)s</span></nav>
@@ -467,7 +503,7 @@ def count_flags(path):
 
 
 def build_index(stats, totals):
-    sheets = "".join("""<a class="sheet" href="%(slug)s/">
+    sheets = "".join("""<a class="sheet t-%(slug)s" href="%(slug)s/">
 <span class="sheet__name">%(name)s</span>
 <p class="sheet__desc">%(blurb)s</p>
 <span class="sheet__foot"><span>%(cmds)d commands</span><span>%(pats)d symptoms</span>%(haz)s</span>
@@ -477,11 +513,11 @@ def build_index(stats, totals):
                    if stats[t["slug"]]["destructive"] else "")
         for t in TOPICS)
 
-    planned = "".join("""<a class="sheet sheet--empty" href="%(gh)s/issues/new?labels=request&amp;title=%%5B%(name)s%%5D%%20" target="_blank" rel="noopener">
+    planned = "".join("""<a class="sheet sheet--empty t-%(slug)s" href="%(gh)s/issues/new?labels=request&amp;title=%%5B%(name)s%%5D%%20" target="_blank" rel="noopener">
 <span class="sheet__name">%(name)s</span>
 <p class="sheet__desc">The directory exists and the pipeline is configured for it. %(why)s Open an issue and it moves up.</p>
 <span class="sheet__foot"><span>Not recorded yet</span><span>Request it &rarr;</span></span>
-</a>""" % dict(gh=GH, name=p["name"], why=p["why"]) for p in PLANNED)
+</a>""" % dict(gh=GH, name=p["name"], why=p["why"], slug=p["slug"]) for p in PLANNED)
 
     # The grid would otherwise end on a blank cell; a request beats a hole.
     planned += """<a class="sheet sheet--empty" href="%(gh)s/issues/new?labels=request" target="_blank" rel="noopener">
@@ -510,7 +546,8 @@ def build_index(stats, totals):
 
     page = head("commands-cheat-sheet — Commands that were run, not written", INDEX_DESC, "",
                 "command cheat sheet, oc commands, podman commands, vault commands, linux commands, "
-                "devops cheat sheet, field tested commands, destructive command warnings", ld)
+                "devops cheat sheet, field tested commands, destructive command warnings", ld,
+                hue=hue_style())
     page += masthead("")
     page += """<main id="main">
 
@@ -684,7 +721,8 @@ INDEX_DESC = ("Cheat sheets for OpenShift, Linux, Podman, Vault, OCI, npm, Flutt
 
 
 def build_symptoms(patterns_all, totals):
-    jump = "".join('<a href="#%s">%s</a>' % (t["slug"], html.escape(t["name"])) for t in TOPICS)
+    jump = "".join('<a class="t-%s" href="#%s">%s</a>' % (t["slug"], t["slug"], html.escape(t["name"]))
+                   for t in TOPICS)
     groups = []
     for t in TOPICS:
         rows = [p for p in patterns_all if p[0]["slug"] == t["slug"]]
@@ -695,11 +733,11 @@ def build_symptoms(patterns_all, totals):
             % (t["slug"], pid, inline(sym), inline(move))
             for _t, sym, move, pid in rows)
         groups.append(
-            '<div class="symgroup" id="%s"><h2>%s <span style="font-family:var(--font-mono);'
-            'font-size:.75rem;color:var(--muted);letter-spacing:.1em">%d</span></h2>'
+            '<div class="symgroup t-%s" id="%s"><h2>%s <span class="n">%d</span></h2>'
             '<div class="symlist">%s</div>'
             '<p style="margin-top:.8rem;font-size:.9rem"><a href="../%s/">Open the full %s sheet &rarr;</a></p></div>'
-            % (t["slug"], html.escape(t["name"]), len(rows), items, t["slug"], html.escape(t["name"])))
+            % (t["slug"], t["slug"], html.escape(t["name"]), len(rows), items,
+               t["slug"], html.escape(t["name"])))
 
     desc = ("Every failure symptom covered by the cheat sheets, on one page: %d symptoms across %d "
             "technologies, each linking straight to the command that resolves it." % (totals["patterns"], len(TOPICS)))
@@ -721,7 +759,8 @@ def build_symptoms(patterns_all, totals):
     page = head("Symptom Index — %d Failures and the Command That Fixes Each | commands-cheat-sheet" % totals["patterns"],
                 desc, "symptoms",
                 "command not found, namespace stuck terminating, address already in use, cors error, "
-                "argocd sync stuck, port already in use, gem command not found", ld)
+                "argocd sync stuck, port already in use, gem command not found", ld,
+                hue=hue_style())
     page += masthead("symptoms")
     page += """<main id="main"><div class="shell">
 <nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Symptom index</span></nav>
@@ -748,7 +787,8 @@ def build_symptoms(patterns_all, totals):
 
 def build_404():
     page = head("Page not found | commands-cheat-sheet",
-                "That page does not exist. Every cheat sheet is listed here.", "")
+                "That page does not exist. Every cheat sheet is listed here.", "",
+                hue=hue_style())
     page += masthead("")
     page += """<main id="main"><div class="shell"><div class="topichead" style="padding-top:5rem">
 <p class="eyebrow">404</p>
@@ -758,8 +798,9 @@ def build_404():
 <div class="sheets">%s</div>
 <p style="margin:1.5rem 0 5rem"><a href="/commands-cheat-sheet/symptoms/">Or search by symptom &rarr;</a></p>
 </div></main>""" % "".join(
-        '<a class="sheet" href="/commands-cheat-sheet/%s/"><span class="sheet__name">%s</span>'
-        '<p class="sheet__desc">%s</p></a>' % (t["slug"], html.escape(t["name"]), html.escape(t["blurb"]))
+        '<a class="sheet t-%s" href="/commands-cheat-sheet/%s/"><span class="sheet__name">%s</span>'
+        '<p class="sheet__desc">%s</p></a>'
+        % (t["slug"], t["slug"], html.escape(t["name"]), html.escape(t["blurb"]))
         for t in TOPICS)
     page += footer("")
     open(os.path.join(OUT, "404.html"), "w", encoding="utf-8").write(page)

@@ -11,9 +11,8 @@
   } catch (e) { /* private mode — the OS setting still applies */ }
 
   function currentTheme() {
-    var set = root.getAttribute('data-theme');
-    if (set) return set;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    /* The site commits to the dark look: light is opt-in, not OS-driven. */
+    return root.getAttribute('data-theme') || 'dark';
   }
 
   var toggle = document.querySelector('[data-theme-toggle]');

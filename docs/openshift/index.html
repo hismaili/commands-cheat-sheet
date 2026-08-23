@@ -15,13 +15,13 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="OpenShift &amp; ArgoCD Commands — Stuck Syncs, Finalizers, RBAC, Loki | commands-cheat-sheet">
 <meta name="twitter:description" content="Field-tested oc commands for OpenShift: unstick an ArgoCD sync, strip finalizers off a namespace stuck Terminating, debug RBAC with can-i --as, verify Loki and ODF certificate chains.">
-<meta name="theme-color" content="#E3E4DD" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0C141E" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2317457E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23F5F5F0' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#080D16">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23080D16'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%235B9BF2' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
+<style>:root{--topic:#F0665A}:root[data-theme="light"]{--topic:#C0392B}</style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
 {"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/openshift/#article","headline":"OpenShift & ArgoCD Commands — Stuck Syncs, Finalizers, RBAC, Loki","description":"Field-tested oc commands for OpenShift: unstick an ArgoCD sync, strip finalizers off a namespace stuck Terminating, debug RBAC with can-i --as, verify Loki and ODF certificate chains.",
@@ -270,7 +270,7 @@ oc get &lt;KIND&gt; &lt;NAME&gt; -n &lt;NAMESPACE&gt; -o jsonpath='{range .statu
 <section id="next">
 <h2 id="next">Related sheets</h2>
 <p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
-<div class="related"><a href="../vault/"><b>Vault</b><span>Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</span></a><a href="../podman/"><b>Podman</b><span>Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</span></a><a href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a></div>
+<div class="related"><a class="t-vault" href="../vault/"><b>Vault</b><span>Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</span></a><a class="t-podman" href="../podman/"><b>Podman</b><span>Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</span></a><a class="t-linux" href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a></div>
 <div class="pagecta">
 <p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
 <div style="display:flex;gap:.6rem;flex-wrap:wrap">
