@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Page not found | commands-cheat-sheet</title>
-<meta name="description" content="That page does not exist. Every cheat sheet is listed here.">
+<meta name="description" content="No page at that address. Every cheat sheet on the site is listed here.">
 <link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="commands-cheat-sheet">
 <meta property="og:title" content="Page not found | commands-cheat-sheet">
-<meta property="og:description" content="That page does not exist. Every cheat sheet is listed here.">
+<meta property="og:description" content="No page at that address. Every cheat sheet on the site is listed here.">
 <meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Page not found | commands-cheat-sheet">
-<meta name="twitter:description" content="That page does not exist. Every cheat sheet is listed here.">
+<meta name="twitter:description" content="No page at that address. Every cheat sheet on the site is listed here.">
 <meta name="theme-color" content="#080D16">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23080D16'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%235B9BF2' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,20 +25,45 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="masthead"><div class="shell masthead__in">
+<button class="burger" type="button" data-drawer aria-controls="rail" aria-expanded="false">
+<span></span><span></span><span></span><span class="sr">Sheets and search</span>
+</button>
 <a class="wordmark" href=""><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
 <nav aria-label="Primary">
-<a href="#sheets">Sheets</a>
+<button class="findbtn" type="button" data-palette-open>
+<span aria-hidden="true">&#9906;</span> Search <kbd>&#8984;K</kbd>
+</button>
 <a href="symptoms/">Symptoms</a>
-<a class="opt" href="#pipeline">How it is made</a>
 <a class="opt" href="#ask">Ask</a>
 <button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
 <a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
-</nav></div></header><main id="main"><div class="shell"><div class="topichead" style="padding-top:5rem">
-<p class="eyebrow">404</p>
-<h1>No such page.</h1>
-<p class="lede">Nothing at that address. Here is everything that does exist.</p>
+</nav></div></header><div class="app"><aside class="rail" id="rail" data-index="search-index.json" data-up="" aria-label="Sheets and search">
+<div class="rail__in">
+<form class="sf" role="search" data-search onsubmit="return false">
+<label class="sr" for="sf-input">Search every command</label>
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input id="sf-input" class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search commands" aria-expanded="false" aria-controls="sf-results" role="combobox">
+<kbd class="sf__kbd">/</kbd>
 </div>
-<div class="sheets"><a class="sheet t-openshift" href="/commands-cheat-sheet/openshift/"><span class="sheet__name">OpenShift</span><p class="sheet__desc">Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</p></a><a class="sheet t-linux" href="/commands-cheat-sheet/linux/"><span class="sheet__name">Linux</span><p class="sheet__desc">PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</p></a><a class="sheet t-podman" href="/commands-cheat-sheet/podman/"><span class="sheet__name">Podman</span><p class="sheet__desc">Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</p></a><a class="sheet t-vault" href="/commands-cheat-sheet/vault/"><span class="sheet__name">Vault</span><p class="sheet__desc">Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</p></a><a class="sheet t-oci" href="/commands-cheat-sheet/oci/"><span class="sheet__name">Oracle Cloud (OCI)</span><p class="sheet__desc">Get the CLI on the box, get ~/.oci/config written, and get SSH to stop rejecting a perfectly good key.</p></a><a class="sheet t-web" href="/commands-cheat-sheet/web/"><span class="sheet__name">Web / React Native</span><p class="sheet__desc">Start Metro first — every other script in the project assumes it is already up in another terminal.</p></a><a class="sheet t-mobile" href="/commands-cheat-sheet/mobile/"><span class="sheet__name">Mobile</span><p class="sheet__desc">Which build system are you actually invoking — the native toolchain, or Expo&#x27;s remote one? The docs you need differ.</p></a><a class="sheet t-ruby" href="/commands-cheat-sheet/ruby/"><span class="sheet__name">Ruby</span><p class="sheet__desc">Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land somewhere PATH has never heard of.</p></a><a class="sheet t-api-testing" href="/commands-cheat-sheet/api-testing/"><span class="sheet__name">API Testing</span><p class="sheet__desc">A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</p></a></div>
+<div class="sf__results" id="sf-results" role="listbox" hidden></div>
+</form>
+<h4>Sheets</h4>
+<ul class="rail__sheets"><li><a class="t-openshift" href="openshift/"><i class="dot"></i><span>OpenShift</span><b>78</b></a></li><li><a class="t-linux" href="linux/"><i class="dot"></i><span>Linux</span><b>15</b></a></li><li><a class="t-podman" href="podman/"><i class="dot"></i><span>Podman</span><b>14</b></a></li><li><a class="t-vault" href="vault/"><i class="dot"></i><span>Vault</span><b>7</b></a></li><li><a class="t-oci" href="oci/"><i class="dot"></i><span>Oracle Cloud (OCI)</span><b>8</b></a></li><li><a class="t-web" href="web/"><i class="dot"></i><span>Web / React Native</span><b>5</b></a></li><li><a class="t-mobile" href="mobile/"><i class="dot"></i><span>Mobile</span><b>3</b></a></li><li><a class="t-ruby" href="ruby/"><i class="dot"></i><span>Ruby</span><b>6</b></a></li><li><a class="t-api-testing" href="api-testing/"><i class="dot"></i><span>API Testing</span><b>2</b></a></li><li><a class="t-git rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BGit%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Git</span><b>&mdash;</b></a></li><li><a class="t-kafka rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Kafka</span><b>&mdash;</b></a></li></ul>
+
+<h4>More</h4>
+<ul class="rail__more"><li><a href="symptoms/">Every symptom</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star on GitHub</a></li>
+</ul>
+</div>
+</aside><div class="app__body"><main id="main"><div class="shell"><div class="topichead" style="padding-top:5rem">
+<p class="eyebrow">404</p>
+<h1>No page at that address.</h1>
+<p class="lede">Every cheat sheet is listed below.</p>
+</div>
+<div class="sheets"><a class="sheet t-openshift" href="/commands-cheat-sheet/openshift/"><span class="sheet__name">OpenShift</span><p class="sheet__desc">Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</p></a><a class="sheet t-linux" href="/commands-cheat-sheet/linux/"><span class="sheet__name">Linux</span><p class="sheet__desc">PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</p></a><a class="sheet t-podman" href="/commands-cheat-sheet/podman/"><span class="sheet__name">Podman</span><p class="sheet__desc">Build, run and compose, with every state-destroying command labelled with what it removes.</p></a><a class="sheet t-vault" href="/commands-cheat-sheet/vault/"><span class="sheet__name">Vault</span><p class="sheet__desc">Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</p></a><a class="sheet t-oci" href="/commands-cheat-sheet/oci/"><span class="sheet__name">Oracle Cloud (OCI)</span><p class="sheet__desc">Get the CLI on the box, get ~/.oci/config written, and get SSH to stop rejecting a perfectly good key.</p></a><a class="sheet t-web" href="/commands-cheat-sheet/web/"><span class="sheet__name">Web / React Native</span><p class="sheet__desc">Start Metro first — every other script in the project assumes it is already up in another terminal.</p></a><a class="sheet t-mobile" href="/commands-cheat-sheet/mobile/"><span class="sheet__name">Mobile</span><p class="sheet__desc">Which build system are you actually invoking — the native toolchain, or Expo&#x27;s remote one? The docs you need differ.</p></a><a class="sheet t-ruby" href="/commands-cheat-sheet/ruby/"><span class="sheet__name">Ruby</span><p class="sheet__desc">Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land outside PATH.</p></a><a class="sheet t-api-testing" href="/commands-cheat-sheet/api-testing/"><span class="sheet__name">API Testing</span><p class="sheet__desc">A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</p></a></div>
 <p style="margin:1.5rem 0 5rem"><a href="/commands-cheat-sheet/symptoms/">Or search by symptom &rarr;</a></p>
 </div></main><footer class="footer"><div class="shell">
 <div class="footer__grid">
@@ -73,9 +98,26 @@
 </div>
 </div>
 <div class="footer__base">
-<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span>Every command recorded on a working system and traced to its source.</span>
 <span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
 </div>
 </div></footer>
+</div></div>
+<div class="palette" data-palette hidden>
+<div class="palette__scrim" data-palette-close></div>
+<div class="palette__box" role="dialog" aria-modal="true" aria-label="Search every command">
+<form class="sf sf--big" role="search" data-search onsubmit="return false">
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search 138 commands, 48 symptoms" aria-expanded="false" role="combobox">
+<button class="palette__esc" type="button" data-palette-close>esc</button>
+</div>
+<div class="sf__results" role="listbox" hidden></div>
+<p class="palette__hint"><kbd>&#8593;</kbd><kbd>&#8595;</kbd> move &nbsp; <kbd>&#8629;</kbd> open &nbsp; <kbd>tab</kbd> complete</p>
+</form>
+</div>
+</div>
 <script src="assets/site.js" defer></script>
 </body></html>

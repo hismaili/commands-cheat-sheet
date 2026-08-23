@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
-<style>:root{--topic:#DFBF45}:root[data-theme="light"]{--topic:#8A6D0B}</style>
+<style>:root{--topic:#DFBF45}:root[data-theme="light"]{--topic:#8A6D0B}.t-openshift{--topic:#F0665A}:root[data-theme="light"] .t-openshift{--topic:#C0392B}.t-oci{--topic:#F0913C}:root[data-theme="light"] .t-oci{--topic:#B45309}.t-linux{--topic:#DFBF45}:root[data-theme="light"] .t-linux{--topic:#8A6D0B}.t-mobile{--topic:#7FC44E}:root[data-theme="light"] .t-mobile{--topic:#3F7A22}.t-vault{--topic:#35C09B}:root[data-theme="light"] .t-vault{--topic:#0F7A62}.t-api-testing{--topic:#45C4DA}:root[data-theme="light"] .t-api-testing{--topic:#0E6E80}.t-web{--topic:#5B9BF2}:root[data-theme="light"] .t-web{--topic:#1D5FB8}.t-podman{--topic:#9C82F0}:root[data-theme="light"] .t-podman{--topic:#5B3FC4}.t-ruby{--topic:#EA6BAA}:root[data-theme="light"] .t-ruby{--topic:#A81E63}.t-git{--topic:#8194A9}:root[data-theme="light"] .t-git{--topic:#5B6675}.t-kafka{--topic:#8194A9}:root[data-theme="light"] .t-kafka{--topic:#5B6675}</style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
 {"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/linux/#article","headline":"Linux Commands — PATH, systemd User Units, Ports, yum","description":"Field-tested Linux commands: make PATH exports survive a new shell, tell system units from --user units in systemd, find and kill whatever holds a port, script yum without prompts.",
@@ -36,26 +36,48 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="masthead"><div class="shell masthead__in">
+<button class="burger" type="button" data-drawer aria-controls="rail" aria-expanded="false">
+<span></span><span></span><span></span><span class="sr">Sheets and search</span>
+</button>
 <a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
 <nav aria-label="Primary">
-<a href="../#sheets">Sheets</a>
+<button class="findbtn" type="button" data-palette-open>
+<span aria-hidden="true">&#9906;</span> Search <kbd>&#8984;K</kbd>
+</button>
 <a href="../symptoms/">Symptoms</a>
-<a class="opt" href="../#pipeline">How it is made</a>
 <a class="opt" href="../#ask">Ask</a>
 <button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
 <a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
-</nav></div></header><main id="main"><div class="shell">
+</nav></div></header><div class="app"><aside class="rail" id="rail" data-index="../search-index.json" data-up="../" aria-label="Sheets and search">
+<div class="rail__in">
+<form class="sf" role="search" data-search onsubmit="return false">
+<label class="sr" for="sf-input">Search every command</label>
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input id="sf-input" class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search commands" aria-expanded="false" aria-controls="sf-results" role="combobox">
+<kbd class="sf__kbd">/</kbd>
+</div>
+<div class="sf__results" id="sf-results" role="listbox" hidden></div>
+</form>
+<h4>Sheets</h4>
+<ul class="rail__sheets"><li><a class="t-openshift" href="../openshift/"><i class="dot"></i><span>OpenShift</span><b>78</b></a></li><li><a class="t-linux aria-current="page"" href="../linux/"><i class="dot"></i><span>Linux</span><b>15</b></a></li><li><a class="t-podman" href="../podman/"><i class="dot"></i><span>Podman</span><b>14</b></a></li><li><a class="t-vault" href="../vault/"><i class="dot"></i><span>Vault</span><b>7</b></a></li><li><a class="t-oci" href="../oci/"><i class="dot"></i><span>Oracle Cloud (OCI)</span><b>8</b></a></li><li><a class="t-web" href="../web/"><i class="dot"></i><span>Web / React Native</span><b>5</b></a></li><li><a class="t-mobile" href="../mobile/"><i class="dot"></i><span>Mobile</span><b>3</b></a></li><li><a class="t-ruby" href="../ruby/"><i class="dot"></i><span>Ruby</span><b>6</b></a></li><li><a class="t-api-testing" href="../api-testing/"><i class="dot"></i><span>API Testing</span><b>2</b></a></li><li><a class="t-git rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BGit%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Git</span><b>&mdash;</b></a></li><li><a class="t-kafka rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Kafka</span><b>&mdash;</b></a></li></ul>
+<h4>On this page</h4><ul class="rail__toc"><li><a href="#shell-environment-path-configuration">Shell Environment — PATH Configuration</a></li><li><a href="#process-management">Process Management</a></li><li><a href="#package-management">Package Management</a></li><li><a href="#directory-ownership-setup">Directory &amp; Ownership Setup</a></li><li><a href="#service-logging-management-journalctl-systemctl">Service Logging &amp; Management (journalctl / systemctl)</a></li><li><a href="#port-inspection">Port Inspection</a></li><li><a href="#symptoms">Symptom → move</a></li><li><a href="#next">Related sheets</a></li></ul>
+<h4>More</h4>
+<ul class="rail__more"><li><a href="../symptoms/">Every symptom</a></li><li><a href="../#pipeline">How a sheet is made</a></li><li><a href="../#ask">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star on GitHub</a></li>
+</ul>
+</div>
+</aside><div class="app__body"><main id="main"><div class="shell">
 <nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Linux</span></nav>
 <div class="topichead">
 <p class="eyebrow"><span class="tick">&#9679;</span> 15 commands &middot; 7 symptoms &middot; traced to source</p>
 <h1>Linux Cheat Sheet</h1>
 <p class="lede">PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</p>
 </div>
-<div class="doc">
-<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#shell-environment-path-configuration">Shell Environment — PATH Configuration</a></li><li><a href="#process-management">Process Management</a></li><li><a href="#package-management">Package Management</a></li><li><a href="#directory-ownership-setup">Directory &amp; Ownership Setup</a></li><li><a href="#service-logging-management-journalctl-systemctl">Service Logging &amp; Management (journalctl / systemctl)</a></li><li><a href="#port-inspection">Port Inspection</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
-<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
-<div class="prose"><section id="shell-environment-path-configuration"><h2 id="shell-environment-path-configuration">Shell Environment — PATH Configuration</h2><p>A newly installed tool's executables are invisible to the shell until its <code>bin/</code> directories are on <code>PATH</code>. The fix is two steps that must be done together: export the layered install-root variables and prepend their <code>bin/</code> paths, then persist that into the shell profile — an <code>export</code> alone only lives for the current shell session and vanishes the moment it closes.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># 1. Register the tool's install root (and nested version/package roots) as</span>
+<div class="doc"><div class="prose"><section id="shell-environment-path-configuration"><h2 id="shell-environment-path-configuration">Shell Environment — PATH Configuration</h2><p>A newly installed tool's executables are invisible to the shell until its <code>bin/</code> directories are on <code>PATH</code>. The fix is two steps that must be done together: export the layered install-root variables and prepend their <code>bin/</code> paths, then persist that into the shell profile — an <code>export</code> alone only lives for the current shell session and vanishes the moment it closes.</p>
+<div class="cmd" id="c-1"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># 1. Register the tool's install root (and nested version/package roots) as</span>
 <span class="c">#    env vars, then prepend each bin/ dir onto PATH for THIS shell only</span>
 export &lt;TOOL_HOME&gt;=$HOME/&lt;TOOL_DIR&gt;
 export &lt;TOOL_VERSION_HOME&gt;=$&lt;TOOL_HOME&gt;/&lt;TOOL_SUBPATH&gt;
@@ -65,23 +87,23 @@ export PATH=$&lt;TOOL_HOME&gt;/bin:$&lt;TOOL_VERSION_HOME&gt;/bin:$&lt;TOOL_PACK
 <span class="c"># 2. Persist it — without this, the exports above are gone on next login/shell</span>
 vi &lt;USER_HOME&gt;/.bash_profile</code></pre></div></section>
 <section id="process-management"><h2 id="process-management">Process Management</h2><p>A port refusing to bind almost always means a leftover process is still holding it.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Find and kill whatever process is listening on PORT</span>
+<div class="cmd" id="c-2"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Find and kill whatever process is listening on PORT</span>
 sudo fuser -k &lt;PORT&gt;/tcp</code></pre></div>
 <div class="callout callout--hazard"><span class="callout__k">Destructive</span><p><strong>Destructive: <code>fuser -k</code> force-kills whatever process holds that port — not necessarily the one you intended — with no confirmation prompt and no graceful shutdown.</strong> It sends the kill signal to every PID bound to that port, so buffers aren't flushed and locks aren't released cleanly. Confirm what actually owns the port (<code>sudo lsof -i :&lt;PORT&gt;</code>, see Port Inspection below) before running this if the wrong process dying would matter.</p></div></section>
 <section id="package-management"><h2 id="package-management">Package Management</h2><p><code>yum</code> prompts for confirmation by default, which is exactly what breaks unattended provisioning scripts. <code>-y</code> is what turns an interactive package manager into something scriptable.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Update every installed package to its latest available version</span>
+<div class="cmd" id="c-3"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Update every installed package to its latest available version</span>
 sudo yum update -y
 
 <span class="c"># Install one or more packages, no confirmation prompt</span>
 sudo yum install -y &lt;PACKAGES&gt;</code></pre></div></section>
 <section id="directory-ownership-setup"><h2 id="directory-ownership-setup">Directory &amp; Ownership Setup</h2><p>A deploy that runs as root creates files root owns — and the non-root user who has to <code>docker-compose up</code> afterward can't write into them. Create the tree as root, then hand ownership to the user who will actually operate it.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Create the app directory tree (and any missing parents)</span>
+<div class="cmd" id="c-4"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Create the app directory tree (and any missing parents)</span>
 sudo mkdir -p &lt;USER_HOME&gt;/app/docker-compose
 
 <span class="c"># Hand ownership to the deploying user so it can write without sudo</span>
 sudo chown &lt;USER&gt;:&lt;USER&gt; &lt;USER_HOME&gt;/app/docker-compose</code></pre></div></section>
 <section id="service-logging-management-journalctl-systemctl"><h2 id="service-logging-management-journalctl-systemctl">Service Logging &amp; Management (journalctl / systemctl)</h2><p>System services and user services live in two separate systemd instances, and mixing up which one you're talking to is the usual cause of "I enabled it but it's not running." System units need <code>sudo</code>; user units run under the invoking user's own systemd and never do.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># System service — follow its journal in real time (needs sudo)</span>
+<div class="cmd" id="c-5"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># System service — follow its journal in real time (needs sudo)</span>
 sudo journalctl -u &lt;SYSTEM_SERVICE&gt; -f
 
 <span class="c"># User service — pick up new/changed unit files in ~/.config/systemd/user</span>
@@ -93,22 +115,22 @@ systemctl --user enable --now &lt;USER_SERVICE&gt;
 <span class="c"># User service — follow its journal in real time (no sudo)</span>
 journalctl --user -u &lt;USER_SERVICE&gt; -f</code></pre></div></section>
 <section id="port-inspection"><h2 id="port-inspection">Port Inspection</h2><p>Before killing whatever is bound to a port, find out what it actually is.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># List the process(es) bound to a TCP/UDP port</span>
+<div class="cmd" id="c-6"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># List the process(es) bound to a TCP/UDP port</span>
 sudo lsof -i :&lt;PORT&gt;</code></pre></div></section>
-<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-new-tool-s-command-not-found-after-install"><h3 class="faq__q"><a href="#q-new-tool-s-command-not-found-after-install">New tool's command not found after install</a></h3><p class="faq__a">Export its install-root vars and prepend <code>bin/</code> dirs onto <code>PATH</code></p></div><div class="faq__item" id="q-path-export-disappears-in-a-new-terminal-session"><h3 class="faq__q"><a href="#q-path-export-disappears-in-a-new-terminal-session">PATH export disappears in a new terminal/session</a></h3><p class="faq__a">Add the same exports to <code>.bash_profile</code> so they persist</p></div><div class="faq__item" id="q-service-won-t-start-address-already-in-use"><h3 class="faq__q"><a href="#q-service-won-t-start-address-already-in-use">Service won't start: "address already in use"</a></h3><p class="faq__a"><code>sudo lsof -i :&lt;PORT&gt;</code> to identify the holder, then <code>sudo fuser -k &lt;PORT&gt;/tcp</code> — it kills without asking, confirm first</p></div><div class="faq__item" id="q-provisioning-script-hangs-on-a-yum-prompt"><h3 class="faq__q"><a href="#q-provisioning-script-hangs-on-a-yum-prompt">Provisioning script hangs on a yum prompt</a></h3><p class="faq__a">Add <code>-y</code> to <code>yum update</code>/<code>yum install</code></p></div><div class="faq__item" id="q-non-root-user-can-t-write-into-a-freshly-created-app-dir"><h3 class="faq__q"><a href="#q-non-root-user-can-t-write-into-a-freshly-created-app-dir">Non-root user can't write into a freshly created app dir</a></h3><p class="faq__a"><code>sudo mkdir -p</code> then <code>sudo chown &lt;USER&gt;:&lt;USER&gt;</code> the directory</p></div><div class="faq__item" id="q-systemctl-user-enable-worked-but-service-isn-t-running"><h3 class="faq__q"><a href="#q-systemctl-user-enable-worked-but-service-isn-t-running"><code>systemctl --user enable</code> "worked" but service isn't running</a></h3><p class="faq__a">Check you're not confusing it with a system unit — user units need <code>systemctl --user</code> / <code>journalctl --user</code>, not <code>sudo</code></p></div><div class="faq__item" id="q-new-user-unit-file-isn-t-picked-up"><h3 class="faq__q"><a href="#q-new-user-unit-file-isn-t-picked-up">New <code>--user</code> unit file isn't picked up</a></h3><p class="faq__a"><code>systemctl --user daemon-reload</code> before <code>enable --now</code></p></div></div></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, phrased the way it appears in a terminal. Link to any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-new-tool-s-command-not-found-after-install"><h3 class="faq__q"><a href="#q-new-tool-s-command-not-found-after-install">New tool's command not found after install</a></h3><p class="faq__a">Export its install-root vars and prepend <code>bin/</code> dirs onto <code>PATH</code></p></div><div class="faq__item" id="q-path-export-disappears-in-a-new-terminal-session"><h3 class="faq__q"><a href="#q-path-export-disappears-in-a-new-terminal-session">PATH export disappears in a new terminal/session</a></h3><p class="faq__a">Add the same exports to <code>.bash_profile</code> so they persist</p></div><div class="faq__item" id="q-service-won-t-start-address-already-in-use"><h3 class="faq__q"><a href="#q-service-won-t-start-address-already-in-use">Service won't start: "address already in use"</a></h3><p class="faq__a"><code>sudo lsof -i :&lt;PORT&gt;</code> to identify the holder, then <code>sudo fuser -k &lt;PORT&gt;/tcp</code> — it kills without asking, confirm first</p></div><div class="faq__item" id="q-provisioning-script-hangs-on-a-yum-prompt"><h3 class="faq__q"><a href="#q-provisioning-script-hangs-on-a-yum-prompt">Provisioning script hangs on a yum prompt</a></h3><p class="faq__a">Add <code>-y</code> to <code>yum update</code>/<code>yum install</code></p></div><div class="faq__item" id="q-non-root-user-can-t-write-into-a-freshly-created-app-dir"><h3 class="faq__q"><a href="#q-non-root-user-can-t-write-into-a-freshly-created-app-dir">Non-root user can't write into a freshly created app dir</a></h3><p class="faq__a"><code>sudo mkdir -p</code> then <code>sudo chown &lt;USER&gt;:&lt;USER&gt;</code> the directory</p></div><div class="faq__item" id="q-systemctl-user-enable-worked-but-service-isn-t-running"><h3 class="faq__q"><a href="#q-systemctl-user-enable-worked-but-service-isn-t-running"><code>systemctl --user enable</code> "worked" but service isn't running</a></h3><p class="faq__a">Check you're not confusing it with a system unit — user units need <code>systemctl --user</code> / <code>journalctl --user</code>, not <code>sudo</code></p></div><div class="faq__item" id="q-new-user-unit-file-isn-t-picked-up"><h3 class="faq__q"><a href="#q-new-user-unit-file-isn-t-picked-up">New <code>--user</code> unit file isn't picked up</a></h3><p class="faq__a"><code>systemctl --user daemon-reload</code> before <code>enable --now</code></p></div></div></section>
 <section id="next">
 <h2 id="next">Related sheets</h2>
-<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
-<div class="related"><a class="t-podman" href="../podman/"><b>Podman</b><span>Build, run and compose — with every command that destroys state labelled with what exactly it takes down.</span></a><a class="t-oci" href="../oci/"><b>Oracle Cloud (OCI)</b><span>Get the CLI on the box, get ~/.oci/config written, and get SSH to stop rejecting a perfectly good key.</span></a><a class="t-ruby" href="../ruby/"><b>Ruby</b><span>Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land somewhere PATH has never heard of.</span></a></div>
+<p>Work rarely stays inside one tool. These are the sheets most often open alongside this one.</p>
+<div class="related"><a class="t-podman" href="../podman/"><b>Podman</b><span>Build, run and compose, with every state-destroying command labelled with what it removes.</span></a><a class="t-oci" href="../oci/"><b>Oracle Cloud (OCI)</b><span>Get the CLI on the box, get ~/.oci/config written, and get SSH to stop rejecting a perfectly good key.</span></a><a class="t-ruby" href="../ruby/"><b>Ruby</b><span>Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land outside PATH.</span></a></div>
 <div class="pagecta">
-<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<p><strong>Did this resolve it?</strong> Stars indicate which sheets are worth extending. If a command here is wrong, or destructive without saying so, open an issue — I would rather fix it than have someone find out on a live system.</p>
 <div style="display:flex;gap:.6rem;flex-wrap:wrap">
 <a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
 <a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Linux]%20" target="_blank" rel="noopener">Report a wrong command</a>
 </div>
 </div>
-</section></div>
-</div></div></main><footer class="footer"><div class="shell">
+</section></div></div>
+</div></main><footer class="footer"><div class="shell">
 <div class="footer__grid">
 <div>
 <h4>Sitemap</h4>
@@ -141,9 +163,26 @@ sudo lsof -i :&lt;PORT&gt;</code></pre></div></section>
 </div>
 </div>
 <div class="footer__base">
-<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span>Every command recorded on a working system and traced to its source.</span>
 <span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
 </div>
 </div></footer>
+</div></div>
+<div class="palette" data-palette hidden>
+<div class="palette__scrim" data-palette-close></div>
+<div class="palette__box" role="dialog" aria-modal="true" aria-label="Search every command">
+<form class="sf sf--big" role="search" data-search onsubmit="return false">
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search 138 commands, 48 symptoms" aria-expanded="false" role="combobox">
+<button class="palette__esc" type="button" data-palette-close>esc</button>
+</div>
+<div class="sf__results" role="listbox" hidden></div>
+<p class="palette__hint"><kbd>&#8593;</kbd><kbd>&#8595;</kbd> move &nbsp; <kbd>&#8629;</kbd> open &nbsp; <kbd>tab</kbd> complete</p>
+</form>
+</div>
+</div>
 <script src="../assets/site.js" defer></script>
 </body></html>

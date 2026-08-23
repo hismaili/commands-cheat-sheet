@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
-<style>:root{--topic:#EA6BAA}:root[data-theme="light"]{--topic:#A81E63}</style>
+<style>:root{--topic:#EA6BAA}:root[data-theme="light"]{--topic:#A81E63}.t-openshift{--topic:#F0665A}:root[data-theme="light"] .t-openshift{--topic:#C0392B}.t-oci{--topic:#F0913C}:root[data-theme="light"] .t-oci{--topic:#B45309}.t-linux{--topic:#DFBF45}:root[data-theme="light"] .t-linux{--topic:#8A6D0B}.t-mobile{--topic:#7FC44E}:root[data-theme="light"] .t-mobile{--topic:#3F7A22}.t-vault{--topic:#35C09B}:root[data-theme="light"] .t-vault{--topic:#0F7A62}.t-api-testing{--topic:#45C4DA}:root[data-theme="light"] .t-api-testing{--topic:#0E6E80}.t-web{--topic:#5B9BF2}:root[data-theme="light"] .t-web{--topic:#1D5FB8}.t-podman{--topic:#9C82F0}:root[data-theme="light"] .t-podman{--topic:#5B3FC4}.t-ruby{--topic:#EA6BAA}:root[data-theme="light"] .t-ruby{--topic:#A81E63}.t-git{--topic:#8194A9}:root[data-theme="light"] .t-git{--topic:#5B6675}.t-kafka{--topic:#8194A9}:root[data-theme="light"] .t-kafka{--topic:#5B6675}</style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
 {"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/ruby/#article","headline":"Ruby & Gem Commands on macOS — GEM_HOME, PATH, CocoaPods","description":"Field-tested Ruby commands for macOS: install a pinned gem around Apple's system Ruby, then set GEM_HOME and the derived paths so gem, ruby and pod are actually found.",
@@ -36,30 +36,52 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="masthead"><div class="shell masthead__in">
+<button class="burger" type="button" data-drawer aria-controls="rail" aria-expanded="false">
+<span></span><span></span><span></span><span class="sr">Sheets and search</span>
+</button>
 <a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
 <nav aria-label="Primary">
-<a href="../#sheets">Sheets</a>
+<button class="findbtn" type="button" data-palette-open>
+<span aria-hidden="true">&#9906;</span> Search <kbd>&#8984;K</kbd>
+</button>
 <a href="../symptoms/">Symptoms</a>
-<a class="opt" href="../#pipeline">How it is made</a>
 <a class="opt" href="../#ask">Ask</a>
 <button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
 <a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
-</nav></div></header><main id="main"><div class="shell">
+</nav></div></header><div class="app"><aside class="rail" id="rail" data-index="../search-index.json" data-up="../" aria-label="Sheets and search">
+<div class="rail__in">
+<form class="sf" role="search" data-search onsubmit="return false">
+<label class="sr" for="sf-input">Search every command</label>
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input id="sf-input" class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search commands" aria-expanded="false" aria-controls="sf-results" role="combobox">
+<kbd class="sf__kbd">/</kbd>
+</div>
+<div class="sf__results" id="sf-results" role="listbox" hidden></div>
+</form>
+<h4>Sheets</h4>
+<ul class="rail__sheets"><li><a class="t-openshift" href="../openshift/"><i class="dot"></i><span>OpenShift</span><b>78</b></a></li><li><a class="t-linux" href="../linux/"><i class="dot"></i><span>Linux</span><b>15</b></a></li><li><a class="t-podman" href="../podman/"><i class="dot"></i><span>Podman</span><b>14</b></a></li><li><a class="t-vault" href="../vault/"><i class="dot"></i><span>Vault</span><b>7</b></a></li><li><a class="t-oci" href="../oci/"><i class="dot"></i><span>Oracle Cloud (OCI)</span><b>8</b></a></li><li><a class="t-web" href="../web/"><i class="dot"></i><span>Web / React Native</span><b>5</b></a></li><li><a class="t-mobile" href="../mobile/"><i class="dot"></i><span>Mobile</span><b>3</b></a></li><li><a class="t-ruby aria-current="page"" href="../ruby/"><i class="dot"></i><span>Ruby</span><b>6</b></a></li><li><a class="t-api-testing" href="../api-testing/"><i class="dot"></i><span>API Testing</span><b>2</b></a></li><li><a class="t-git rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BGit%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Git</span><b>&mdash;</b></a></li><li><a class="t-kafka rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Kafka</span><b>&mdash;</b></a></li></ul>
+<h4>On this page</h4><ul class="rail__toc"><li><a href="#gem-install">Gem Install</a></li><li><a href="#gem-environment-setup">Gem Environment Setup</a></li><li><a href="#symptoms">Symptom → move</a></li><li><a href="#next">Related sheets</a></li></ul>
+<h4>More</h4>
+<ul class="rail__more"><li><a href="../symptoms/">Every symptom</a></li><li><a href="../#pipeline">How a sheet is made</a></li><li><a href="../#ask">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star on GitHub</a></li>
+</ul>
+</div>
+</aside><div class="app__body"><main id="main"><div class="shell">
 <nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Ruby</span></nav>
 <div class="topichead">
 <p class="eyebrow"><span class="tick">&#9679;</span> 6 commands &middot; 3 symptoms &middot; traced to source</p>
 <h1>Ruby Cheat Sheet</h1>
-<p class="lede">Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land somewhere PATH has never heard of.</p>
+<p class="lede">Apple&#x27;s system Ruby will not let you write to it, and gem-installed binaries land outside PATH.</p>
 </div>
-<div class="doc">
-<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#gem-install">Gem Install</a></li><li><a href="#gem-environment-setup">Gem Environment Setup</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
-<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../api-testing/">API Testing</a></li></ul></aside>
-<div class="prose"><section id="gem-install"><h2 id="gem-install">Gem Install</h2><p>Installing a gem on macOS runs straight into the Apple-managed system Ruby: no write access, no clean place to put it. The pinned <code>--user-install</code> form sidesteps that, at the cost of a flag combination that looks contradictory.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Install a specific pinned version of a gem for the invoking user only</span>
+<div class="doc"><div class="prose"><section id="gem-install"><h2 id="gem-install">Gem Install</h2><p>Installing a gem on macOS runs straight into the Apple-managed system Ruby: no write access, no clean place to put it. The pinned <code>--user-install</code> form sidesteps that, at the cost of a flag combination that looks contradictory.</p>
+<div class="cmd" id="c-1"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Install a specific pinned version of a gem for the invoking user only</span>
 sudo gem install &lt;GEM_NAME&gt; -v &lt;GEM_VERSION&gt; --user-install</code></pre></div>
 <div class="callout callout--uncertain"><span class="callout__k">Uncertain — kept as recorded</span><p><strong>Uncertain — flag conflict left as-is:</strong> <code>sudo</code> installs as root while <code>--user-install</code> targets the invoking user's home directory. This is a known macOS footgun where the gem can land somewhere neither the user nor root expects. It is kept here unmodified because it is field-tested and worked on the source system — not corrected.</p></div></section>
 <section id="gem-environment-setup"><h2 id="gem-environment-setup">Gem Environment Setup</h2><p>A <code>pod</code>/<code>gem</code>/<code>ruby</code> command not found after install, on a toolchain that includes CocoaPods, means the gem-installed executables were never put on <code>PATH</code>. <code>GEM_HOME</code> has to be set first since <code>RUBY_HOME</code> and <code>COCOAPODS_HOME</code> are both derived paths underneath it — then each <code>bin/</code> gets prepended, and the whole block needs to be persisted or it's gone the moment the shell closes.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># 1. Point GEM_HOME at a user-owned gem root, derive the versioned Ruby</span>
+<div class="cmd" id="c-2"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># 1. Point GEM_HOME at a user-owned gem root, derive the versioned Ruby</span>
 <span class="c">#    and CocoaPods gem paths under it, then prepend each bin/ onto PATH</span>
 export GEM_HOME=$HOME/.gem
 export RUBY_HOME=$GEM_HOME/ruby/2.6.0
@@ -68,20 +90,20 @@ export PATH=$GEM_HOME/bin:$RUBY_HOME/bin:$COCOAPODS_HOME/bin:$PATH
 
 <span class="c"># 2. Persist it — without this, the exports above are gone on next login/shell</span>
 vi &lt;USER_HOME&gt;/.bash_profile</code></pre></div></section>
-<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-gem-install-fails-against-apple-managed-system-ruby"><h3 class="faq__q"><a href="#q-gem-install-fails-against-apple-managed-system-ruby">Gem install fails against Apple-managed system Ruby</a></h3><p class="faq__a"><code>sudo gem install &lt;GEM_NAME&gt; -v &lt;GEM_VERSION&gt; --user-install</code> (flag combo is contradictory but field-tested)</p></div><div class="faq__item" id="q-gem-ruby-pod-command-not-found-after-install"><h3 class="faq__q"><a href="#q-gem-ruby-pod-command-not-found-after-install"><code>gem</code>/<code>ruby</code>/<code>pod</code> command not found after install</a></h3><p class="faq__a">Export <code>GEM_HOME</code> → derive <code>RUBY_HOME</code> and <code>COCOAPODS_HOME</code> under it → prepend each <code>bin/</code> onto <code>PATH</code></p></div><div class="faq__item" id="q-path-export-disappears-in-a-new-terminal-session"><h3 class="faq__q"><a href="#q-path-export-disappears-in-a-new-terminal-session">PATH export disappears in a new terminal/session</a></h3><p class="faq__a">Add the same exports to <code>.bash_profile</code> so they persist</p></div></div></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, phrased the way it appears in a terminal. Link to any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-gem-install-fails-against-apple-managed-system-ruby"><h3 class="faq__q"><a href="#q-gem-install-fails-against-apple-managed-system-ruby">Gem install fails against Apple-managed system Ruby</a></h3><p class="faq__a"><code>sudo gem install &lt;GEM_NAME&gt; -v &lt;GEM_VERSION&gt; --user-install</code> (flag combo is contradictory but field-tested)</p></div><div class="faq__item" id="q-gem-ruby-pod-command-not-found-after-install"><h3 class="faq__q"><a href="#q-gem-ruby-pod-command-not-found-after-install"><code>gem</code>/<code>ruby</code>/<code>pod</code> command not found after install</a></h3><p class="faq__a">Export <code>GEM_HOME</code> → derive <code>RUBY_HOME</code> and <code>COCOAPODS_HOME</code> under it → prepend each <code>bin/</code> onto <code>PATH</code></p></div><div class="faq__item" id="q-path-export-disappears-in-a-new-terminal-session"><h3 class="faq__q"><a href="#q-path-export-disappears-in-a-new-terminal-session">PATH export disappears in a new terminal/session</a></h3><p class="faq__a">Add the same exports to <code>.bash_profile</code> so they persist</p></div></div></section>
 <section id="next">
 <h2 id="next">Related sheets</h2>
-<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<p>Work rarely stays inside one tool. These are the sheets most often open alongside this one.</p>
 <div class="related"><a class="t-mobile" href="../mobile/"><b>Mobile</b><span>Which build system are you actually invoking — the native toolchain, or Expo&#x27;s remote one? The docs you need differ.</span></a><a class="t-linux" href="../linux/"><b>Linux</b><span>PATH that survives a new shell, systemd user units that actually start, and the process quietly sitting on your port.</span></a><a class="t-web" href="../web/"><b>Web / React Native</b><span>Start Metro first — every other script in the project assumes it is already up in another terminal.</span></a></div>
 <div class="pagecta">
-<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<p><strong>Did this resolve it?</strong> Stars indicate which sheets are worth extending. If a command here is wrong, or destructive without saying so, open an issue — I would rather fix it than have someone find out on a live system.</p>
 <div style="display:flex;gap:.6rem;flex-wrap:wrap">
 <a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
 <a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[Ruby]%20" target="_blank" rel="noopener">Report a wrong command</a>
 </div>
 </div>
-</section></div>
-</div></div></main><footer class="footer"><div class="shell">
+</section></div></div>
+</div></main><footer class="footer"><div class="shell">
 <div class="footer__grid">
 <div>
 <h4>Sitemap</h4>
@@ -114,9 +136,26 @@ vi &lt;USER_HOME&gt;/.bash_profile</code></pre></div></section>
 </div>
 </div>
 <div class="footer__base">
-<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span>Every command recorded on a working system and traced to its source.</span>
 <span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
 </div>
 </div></footer>
+</div></div>
+<div class="palette" data-palette hidden>
+<div class="palette__scrim" data-palette-close></div>
+<div class="palette__box" role="dialog" aria-modal="true" aria-label="Search every command">
+<form class="sf sf--big" role="search" data-search onsubmit="return false">
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search 138 commands, 48 symptoms" aria-expanded="false" role="combobox">
+<button class="palette__esc" type="button" data-palette-close>esc</button>
+</div>
+<div class="sf__results" role="listbox" hidden></div>
+<p class="palette__hint"><kbd>&#8593;</kbd><kbd>&#8595;</kbd> move &nbsp; <kbd>&#8629;</kbd> open &nbsp; <kbd>tab</kbd> complete</p>
+</form>
+</div>
+</div>
 <script src="../assets/site.js" defer></script>
 </body></html>

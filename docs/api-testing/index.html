@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/site.css">
-<style>:root{--topic:#45C4DA}:root[data-theme="light"]{--topic:#0E6E80}</style>
+<style>:root{--topic:#45C4DA}:root[data-theme="light"]{--topic:#0E6E80}.t-openshift{--topic:#F0665A}:root[data-theme="light"] .t-openshift{--topic:#C0392B}.t-oci{--topic:#F0913C}:root[data-theme="light"] .t-oci{--topic:#B45309}.t-linux{--topic:#DFBF45}:root[data-theme="light"] .t-linux{--topic:#8A6D0B}.t-mobile{--topic:#7FC44E}:root[data-theme="light"] .t-mobile{--topic:#3F7A22}.t-vault{--topic:#35C09B}:root[data-theme="light"] .t-vault{--topic:#0F7A62}.t-api-testing{--topic:#45C4DA}:root[data-theme="light"] .t-api-testing{--topic:#0E6E80}.t-web{--topic:#5B9BF2}:root[data-theme="light"] .t-web{--topic:#1D5FB8}.t-podman{--topic:#9C82F0}:root[data-theme="light"] .t-podman{--topic:#5B3FC4}.t-ruby{--topic:#EA6BAA}:root[data-theme="light"] .t-ruby{--topic:#A81E63}.t-git{--topic:#8194A9}:root[data-theme="light"] .t-git{--topic:#5B6675}.t-kafka{--topic:#8194A9}:root[data-theme="light"] .t-kafka{--topic:#5B6675}</style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
 {"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/api-testing/#article","headline":"curl Commands for API Testing — CORS Preflight and OAuth2 Tokens","description":"Field-tested curl commands for API testing: send the OPTIONS preflight a browser would send to read the real Access-Control-Allow headers, and trade credentials for a token via the password grant.",
@@ -36,44 +36,66 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="masthead"><div class="shell masthead__in">
+<button class="burger" type="button" data-drawer aria-controls="rail" aria-expanded="false">
+<span></span><span></span><span></span><span class="sr">Sheets and search</span>
+</button>
 <a class="wordmark" href="../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
 <nav aria-label="Primary">
-<a href="../#sheets">Sheets</a>
+<button class="findbtn" type="button" data-palette-open>
+<span aria-hidden="true">&#9906;</span> Search <kbd>&#8984;K</kbd>
+</button>
 <a href="../symptoms/">Symptoms</a>
-<a class="opt" href="../#pipeline">How it is made</a>
 <a class="opt" href="../#ask">Ask</a>
 <button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
 <a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
-</nav></div></header><main id="main"><div class="shell">
+</nav></div></header><div class="app"><aside class="rail" id="rail" data-index="../search-index.json" data-up="../" aria-label="Sheets and search">
+<div class="rail__in">
+<form class="sf" role="search" data-search onsubmit="return false">
+<label class="sr" for="sf-input">Search every command</label>
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input id="sf-input" class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search commands" aria-expanded="false" aria-controls="sf-results" role="combobox">
+<kbd class="sf__kbd">/</kbd>
+</div>
+<div class="sf__results" id="sf-results" role="listbox" hidden></div>
+</form>
+<h4>Sheets</h4>
+<ul class="rail__sheets"><li><a class="t-openshift" href="../openshift/"><i class="dot"></i><span>OpenShift</span><b>78</b></a></li><li><a class="t-linux" href="../linux/"><i class="dot"></i><span>Linux</span><b>15</b></a></li><li><a class="t-podman" href="../podman/"><i class="dot"></i><span>Podman</span><b>14</b></a></li><li><a class="t-vault" href="../vault/"><i class="dot"></i><span>Vault</span><b>7</b></a></li><li><a class="t-oci" href="../oci/"><i class="dot"></i><span>Oracle Cloud (OCI)</span><b>8</b></a></li><li><a class="t-web" href="../web/"><i class="dot"></i><span>Web / React Native</span><b>5</b></a></li><li><a class="t-mobile" href="../mobile/"><i class="dot"></i><span>Mobile</span><b>3</b></a></li><li><a class="t-ruby" href="../ruby/"><i class="dot"></i><span>Ruby</span><b>6</b></a></li><li><a class="t-api-testing aria-current="page"" href="../api-testing/"><i class="dot"></i><span>API Testing</span><b>2</b></a></li><li><a class="t-git rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BGit%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Git</span><b>&mdash;</b></a></li><li><a class="t-kafka rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Kafka</span><b>&mdash;</b></a></li></ul>
+<h4>On this page</h4><ul class="rail__toc"><li><a href="#cors">CORS</a></li><li><a href="#oauth2">OAuth2</a></li><li><a href="#symptoms">Symptom → move</a></li><li><a href="#next">Related sheets</a></li></ul>
+<h4>More</h4>
+<ul class="rail__more"><li><a href="../symptoms/">Every symptom</a></li><li><a href="../#pipeline">How a sheet is made</a></li><li><a href="../#ask">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star on GitHub</a></li>
+</ul>
+</div>
+</aside><div class="app__body"><main id="main"><div class="shell">
 <nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>API Testing</span></nav>
 <div class="topichead">
 <p class="eyebrow"><span class="tick">&#9679;</span> 2 commands &middot; 2 symptoms &middot; traced to source</p>
 <h1>API Testing</h1>
 <p class="lede">A browser&#x27;s CORS error tells you nothing. Send the preflight yourself and read what the server actually allows.</p>
 </div>
-<div class="doc">
-<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#cors">CORS</a></li><li><a href="#oauth2">OAuth2</a></li><li><a href="#symptoms">Symptom → move</a></li></ul>
-<h4>Other sheets</h4><ul><li><a href="../openshift/">OpenShift</a></li><li><a href="../linux/">Linux</a></li><li><a href="../podman/">Podman</a></li><li><a href="../vault/">Vault</a></li><li><a href="../oci/">Oracle Cloud (OCI)</a></li><li><a href="../web/">Web / React Native</a></li><li><a href="../mobile/">Mobile</a></li><li><a href="../ruby/">Ruby</a></li></ul></aside>
-<div class="prose"><section id="cors"><h2 id="cors">CORS</h2><p>A browser blocking a POST with an opaque "CORS error" isn't telling you what the server actually returned. Skip the browser and send the preflight yourself — the response headers say exactly which origin, method, and headers the server will allow.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Send the OPTIONS preflight a browser would send before a cross-origin POST</span>
+<div class="doc"><div class="prose"><section id="cors"><h2 id="cors">CORS</h2><p>A browser blocking a POST with an opaque "CORS error" isn't telling you what the server actually returned. Skip the browser and send the preflight yourself — the response headers say exactly which origin, method, and headers the server will allow.</p>
+<div class="cmd" id="c-1"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Send the OPTIONS preflight a browser would send before a cross-origin POST</span>
 curl -X OPTIONS -i -H "Origin: &lt;ORIGIN&gt;" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: Content-Type" &lt;API_URL&gt;</code></pre></div></section>
 <section id="oauth2"><h2 id="oauth2">OAuth2</h2><p>Testing an endpoint behind OAuth2 means getting a token first — the resource owner password credentials grant does this in one request, trading a username and password directly for an access token.</p>
-<div class="cmd"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Exchange user credentials for an access token via the password grant</span>
+<div class="cmd" id="c-2"><div class="cmd__top"><span class="cmd__lang">bash</span><button class="copy" type="button">COPY</button></div><pre><code><span class="c"># Exchange user credentials for an access token via the password grant</span>
 curl -X POST '&lt;TOKEN_URL&gt;' -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=&lt;USERNAME&gt;' -d 'password=&lt;PASSWORD&gt;' -d 'grant_type=password' -d 'client_id=&lt;CLIENT_ID&gt;'</code></pre></div></section>
-<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, in the words you would type into a search box. Deep-link any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-browser-reports-a-cors-failure-with-no-useful-detail"><h3 class="faq__q"><a href="#q-browser-reports-a-cors-failure-with-no-useful-detail">Browser reports a CORS failure with no useful detail</a></h3><p class="faq__a">Run the OPTIONS preflight manually and inspect the <code>Access-Control-Allow-*</code> response headers</p></div><div class="faq__item" id="q-need-a-bearer-token-before-you-can-test-a-protected-endpoint"><h3 class="faq__q"><a href="#q-need-a-bearer-token-before-you-can-test-a-protected-endpoint">Need a bearer token before you can test a protected endpoint</a></h3><p class="faq__a">Request one via the password grant against the token endpoint</p></div></div></section>
+<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2><p>Every failure this sheet answers, phrased the way it appears in a terminal. Link to any one of them, or scan <a href="../symptoms/">all 48 symptoms across every sheet</a>.</p><div class="faq"><div class="faq__item" id="q-browser-reports-a-cors-failure-with-no-useful-detail"><h3 class="faq__q"><a href="#q-browser-reports-a-cors-failure-with-no-useful-detail">Browser reports a CORS failure with no useful detail</a></h3><p class="faq__a">Run the OPTIONS preflight manually and inspect the <code>Access-Control-Allow-*</code> response headers</p></div><div class="faq__item" id="q-need-a-bearer-token-before-you-can-test-a-protected-endpoint"><h3 class="faq__q"><a href="#q-need-a-bearer-token-before-you-can-test-a-protected-endpoint">Need a bearer token before you can test a protected endpoint</a></h3><p class="faq__a">Request one via the password grant against the token endpoint</p></div></div></section>
 <section id="next">
 <h2 id="next">Related sheets</h2>
-<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<p>Work rarely stays inside one tool. These are the sheets most often open alongside this one.</p>
 <div class="related"><a class="t-vault" href="../vault/"><b>Vault</b><span>Four things wired in order: where secrets live, who may read them, how a human logs in, how a service does.</span></a><a class="t-web" href="../web/"><b>Web / React Native</b><span>Start Metro first — every other script in the project assumes it is already up in another terminal.</span></a><a class="t-openshift" href="../openshift/"><b>OpenShift</b><span>Unstick ArgoCD syncs, kill namespaces that will not terminate, and prove an RBAC or TLS failure instead of guessing at it.</span></a></div>
 <div class="pagecta">
-<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<p><strong>Did this resolve it?</strong> Stars indicate which sheets are worth extending. If a command here is wrong, or destructive without saying so, open an issue — I would rather fix it than have someone find out on a live system.</p>
 <div style="display:flex;gap:.6rem;flex-wrap:wrap">
 <a class="btn" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
 <a class="btn btn--ghost" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction&amp;title=[API Testing]%20" target="_blank" rel="noopener">Report a wrong command</a>
 </div>
 </div>
-</section></div>
-</div></div></main><footer class="footer"><div class="shell">
+</section></div></div>
+</div></main><footer class="footer"><div class="shell">
 <div class="footer__grid">
 <div>
 <h4>Sitemap</h4>
@@ -106,9 +128,26 @@ curl -X POST '&lt;TOKEN_URL&gt;' -H 'Content-Type: application/x-www-form-urlenc
 </div>
 </div>
 <div class="footer__base">
-<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span>Every command recorded on a working system and traced to its source.</span>
 <span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
 </div>
 </div></footer>
+</div></div>
+<div class="palette" data-palette hidden>
+<div class="palette__scrim" data-palette-close></div>
+<div class="palette__box" role="dialog" aria-modal="true" aria-label="Search every command">
+<form class="sf sf--big" role="search" data-search onsubmit="return false">
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search 138 commands, 48 symptoms" aria-expanded="false" role="combobox">
+<button class="palette__esc" type="button" data-palette-close>esc</button>
+</div>
+<div class="sf__results" role="listbox" hidden></div>
+<p class="palette__hint"><kbd>&#8593;</kbd><kbd>&#8595;</kbd> move &nbsp; <kbd>&#8629;</kbd> open &nbsp; <kbd>tab</kbd> complete</p>
+</form>
+</div>
+</div>
 <script src="../assets/site.js" defer></script>
 </body></html>

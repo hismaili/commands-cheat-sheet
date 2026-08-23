@@ -9,6 +9,7 @@ docs/ so GitHub Pages can serve it from the main branch (Settings → Pages →
 Deploy from a branch → main → /docs).
 """
 import html
+import json
 import os
 import re
 import shutil
@@ -40,7 +41,7 @@ TOPICS = [
     dict(slug="podman", name="Podman", file="podman/podman.md",
          title="Podman Commands — Build, Run, Compose, and What Deletes What",
          desc="Field-tested Podman commands for build, run, compose and inspection — with the destructive ones labelled: what podman rm -a, stop -a, compose down and --force-recreate actually take with them.",
-         blurb="Build, run and compose — with every command that destroys state labelled with what exactly it takes down.",
+         blurb="Build, run and compose, with every state-destroying command labelled with what it removes.",
          kw="podman commands, podman compose down, podman build --format docker, podman rm -a, podman run detached, podman ps filter",
          related=["linux", "openshift", "web"]),
     dict(slug="vault", name="Vault", file="vault/vault.md",
@@ -70,7 +71,7 @@ TOPICS = [
     dict(slug="ruby", name="Ruby", file="ruby/ruby.md",
          title="Ruby & Gem Commands on macOS — GEM_HOME, PATH, CocoaPods",
          desc="Field-tested Ruby commands for macOS: install a pinned gem around Apple's system Ruby, then set GEM_HOME and the derived paths so gem, ruby and pod are actually found.",
-         blurb="Apple's system Ruby will not let you write to it, and gem-installed binaries land somewhere PATH has never heard of.",
+         blurb="Apple's system Ruby will not let you write to it, and gem-installed binaries land outside PATH.",
          kw="gem install user-install macos, GEM_HOME PATH, cocoapods pod command not found, ruby macos system gem",
          related=["mobile", "linux", "web"]),
     dict(slug="api-testing", name="API Testing", file="api-testing/api-testing.md",
@@ -109,11 +110,11 @@ SITE_HUE = ("#5B9BF2", "#1D5FB8")
 def hue_style(slug=None):
     """A <style> block binding --topic. One hue for a topic page; the whole
     set, class-scoped, for pages that show every sheet at once."""
-    if slug:
-        d, l = HUES.get(slug, SITE_HUE)
-        return ('<style>:root{--topic:%s}:root[data-theme="light"]{--topic:%s}</style>\n' % (d, l))
-    rules = [':root{--topic:%s}' % SITE_HUE[0],
-             ':root[data-theme="light"]{--topic:%s}' % SITE_HUE[1]]
+    base = HUES.get(slug, SITE_HUE) if slug else SITE_HUE
+    rules = [':root{--topic:%s}' % base[0],
+             ':root[data-theme="light"]{--topic:%s}' % base[1]]
+    # The class rules go on every page, not just the ones showing all nine
+    # sheets: the rail lists them everywhere and each dot needs its own hue.
     for k, (d, l) in HUES.items():
         rules.append('.t-%s{--topic:%s}' % (k, d))
         rules.append(':root[data-theme="light"] .t-%s{--topic:%s}' % (k, l))
@@ -251,7 +252,10 @@ def parse(md):
     return title, intro, keep, patterns
 
 
-def render(blocks, cmd_counter):
+def render(blocks, cmd_counter, idx=None, tslug="", tname=""):
+    """Blocks to HTML. When idx is given, every command block and sub-heading
+    is also appended to the search index as it is emitted, so the index cannot
+    describe anything the page does not actually contain."""
     out = []
     for kind, meta, body in blocks:
         if kind == "p":
@@ -267,12 +271,28 @@ def render(blocks, cmd_counter):
                        % (level or "uncertain", label or "Note", inline(body)))
         elif kind == "code":
             cmd_counter[0] += 1
+            cid = "c-%d" % cmd_counter[0]
             out.append(
-                '<div class="cmd"><div class="cmd__top"><span class="cmd__lang">%s</span>'
+                '<div class="cmd" id="%s"><div class="cmd__top"><span class="cmd__lang">%s</span>'
                 '<button class="copy" type="button">COPY</button></div><pre><code>%s</code></pre></div>'
-                % (html.escape(meta), code_html(body)))
+                % (cid, html.escape(meta), code_html(body)))
+            if idx is not None:
+                note = ""
+                for line in body.split("\n"):
+                    ls = line.strip()
+                    if not ls:
+                        continue
+                    if ls.startswith("#"):
+                        note = ls.lstrip("#").strip()
+                        continue
+                    idx.append(dict(t=tslug, n=tname, k="cmd", x=ls, d=note,
+                                    u="%s/#%s" % (tslug, cid)))
         elif kind == "h":
-            out.append('<h%d id="%s">%s</h%d>' % (meta, slugify(body), inline(body), meta))
+            hid = slugify(body)
+            out.append('<h%d id="%s">%s</h%d>' % (meta, hid, inline(body), meta))
+            if idx is not None and meta == 3:
+                idx.append(dict(t=tslug, n=tname, k="section", x=body, d="",
+                                u="%s/#%s" % (tslug, hid)))
         elif kind == "hr":
             out.append('<hr class="perf">')
         elif kind == "table":
@@ -324,16 +344,86 @@ def head(title, desc, path, kw="", extra_ld="", hue=""):
            ld=extra_ld, hue=hue)
 
 
+STATS = {}          # slug -> {"cmds": n, "patterns": n, ...}; filled by main()
+
+
+def rail(path, sections=None, slug=None):
+    """The left rail: search, every sheet, and — on a content page — its own
+    sections. One component on every page, so the topic list is never more than
+    a glance away and every page carries the same nine internal links."""
+    up = "../" if path else ""
+    sheets = "".join(
+        '<li><a class="t-%s%s" href="%s%s/"><i class="dot"></i><span>%s</span>'
+        '<b>%s</b></a></li>'
+        % (t["slug"], ' aria-current="page"' if t["slug"] == slug else "",
+           up, t["slug"], html.escape(t["name"]),
+           STATS.get(t["slug"], {}).get("cmds", ""))
+        for t in TOPICS)
+    sheets += "".join(
+        '<li><a class="t-%s rail__soon" href="%s/issues/new?labels=request&amp;'
+        'title=%%5B%s%%5D%%20" target="_blank" rel="noopener">'
+        '<i class="dot"></i><span>%s</span><b>&mdash;</b></a></li>'
+        % (pl["slug"], GH, pl["name"], html.escape(pl["name"])) for pl in PLANNED)
+
+    onpage = ""
+    if sections:
+        onpage = ('<h4>On this page</h4><ul class="rail__toc">'
+                  + "".join('<li><a href="#%s">%s</a></li>' % (sid, html.escape(nm))
+                            for sid, nm in sections)
+                  + "</ul>")
+
+    # On the landing page these three are already listed under "On this page";
+    # repeating them below would just be the same link twice.
+    more = ""
+    if path:
+        more = ('<li><a href="%(up)ssymptoms/">Every symptom</a></li>'
+                '<li><a href="%(up)s#pipeline">How a sheet is made</a></li>'
+                '<li><a href="%(up)s#ask">Ask a question</a></li>') % {"up": up}
+    elif slug is None and not sections:
+        more = '<li><a href="%ssymptoms/">Every symptom</a></li>' % up
+
+    return """<aside class="rail" id="rail" data-index="%(up)ssearch-index.json" data-up="%(up)s" aria-label="Sheets and search">
+<div class="rail__in">
+<form class="sf" role="search" data-search onsubmit="return false">
+<label class="sr" for="sf-input">Search every command</label>
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input id="sf-input" class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search commands" aria-expanded="false" aria-controls="sf-results" role="combobox">
+<kbd class="sf__kbd">/</kbd>
+</div>
+<div class="sf__results" id="sf-results" role="listbox" hidden></div>
+</form>
+<h4>Sheets</h4>
+<ul class="rail__sheets">%(sheets)s</ul>
+%(onpage)s
+<h4>More</h4>
+<ul class="rail__more">%(more)s
+<li><a href="%(gh)s" target="_blank" rel="noopener">Star on GitHub</a></li>
+</ul>
+</div>
+</aside>""" % dict(up=up, gh=GH, sheets=sheets, onpage=onpage, more=more)
+
+
+def shell_open(path, sections=None, slug=None):
+    return '<div class="app">' + rail(path, sections, slug) + '<div class="app__body">'
+
+
 def masthead(path):
     up = "../" if path else ""
     def cur(p):
         return ' aria-current="page"' if p == path else ""
     return """<header class="masthead"><div class="shell masthead__in">
+<button class="burger" type="button" data-drawer aria-controls="rail" aria-expanded="false">
+<span></span><span></span><span></span><span class="sr">Sheets and search</span>
+</button>
 <a class="wordmark" href="%(up)s"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
 <nav aria-label="Primary">
-<a href="%(up)s#sheets"%(s)s>Sheets</a>
+<button class="findbtn" type="button" data-palette-open>
+<span aria-hidden="true">&#9906;</span> Search <kbd>&#8984;K</kbd>
+</button>
 <a href="%(up)ssymptoms/"%(sym)s>Symptoms</a>
-<a class="opt" href="%(up)s#pipeline">How it is made</a>
 <a class="opt" href="%(up)s#ask">Ask</a>
 <button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
 <a class="btn btn--sm" href="%(gh)s" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
@@ -377,10 +467,27 @@ def footer(path):
 </div>
 </div>
 <div class="footer__base">
-<span>Commands recorded on real machines. Nothing here was written from documentation.</span>
+<span>Every command recorded on a working system and traced to its source.</span>
 <span><a href="%(gh)s" target="_blank" rel="noopener">github.com/%(repo)s</a></span>
 </div>
 </div></footer>
+</div></div>
+<div class="palette" data-palette hidden>
+<div class="palette__scrim" data-palette-close></div>
+<div class="palette__box" role="dialog" aria-modal="true" aria-label="Search every command">
+<form class="sf sf--big" role="search" data-search onsubmit="return false">
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search 138 commands, 48 symptoms" aria-expanded="false" role="combobox">
+<button class="palette__esc" type="button" data-palette-close>esc</button>
+</div>
+<div class="sf__results" role="listbox" hidden></div>
+<p class="palette__hint"><kbd>&#8593;</kbd><kbd>&#8595;</kbd> move &nbsp; <kbd>&#8629;</kbd> open &nbsp; <kbd>tab</kbd> complete</p>
+</form>
+</div>
+</div>
 <script src="%(up)sassets/site.js" defer></script>
 </body></html>""" % dict(up=up, gh=GH, repo=REPO, cols=cols)
 
@@ -388,21 +495,26 @@ def footer(path):
 # ---------------------------------------------------------------------------
 # Pages
 # ---------------------------------------------------------------------------
-def build_topic(t, stats, patterns_all):
+def build_topic(t, stats, patterns_all, idx):
     md = open(os.path.join(ROOT, t["file"]), encoding="utf-8").read()
     title, intro, sections, patterns = parse(md)
     counter = [0]
 
-    toc = "".join('<li><a href="#%s">%s</a></li>' % (s["id"], html.escape(s["heading"])) for s in sections)
+    railsecs = [(s["id"], s["heading"]) for s in sections]
     if patterns:
-        toc += '<li><a href="#symptoms">Symptom → move</a></li>'
+        railsecs.append(("symptoms", "Symptom \u2192 move"))
+    railsecs.append(("next", "Related sheets"))
 
     body = []
     if intro:
-        body.append('<section id="overview">' + render(intro, counter) + "</section>")
+        body.append('<section id="overview">'
+                    + render(intro, counter, idx, t["slug"], t["name"]) + "</section>")
     for s in sections:
+        idx.append(dict(t=t["slug"], n=t["name"], k="section", x=s["heading"], d="",
+                        u="%s/#%s" % (t["slug"], s["id"])))
         body.append('<section id="%s"><h2 id="%s">%s</h2>%s</section>'
-                    % (s["id"], s["id"], html.escape(s["heading"]), render(s["blocks"], counter)))
+                    % (s["id"], s["id"], html.escape(s["heading"]),
+                       render(s["blocks"], counter, idx, t["slug"], t["name"])))
 
     faq = []
     for sym, move in patterns:
@@ -411,11 +523,13 @@ def build_topic(t, stats, patterns_all):
             '<div class="faq__item" id="%s"><h3 class="faq__q"><a href="#%s">%s</a></h3>'
             '<p class="faq__a">%s</p></div>' % (pid, pid, inline(sym), inline(move)))
         patterns_all.append((t, sym, move, pid))
+        idx.append(dict(t=t["slug"], n=t["name"], k="symptom", x=sym,
+                        d=re.sub(r"[`*]", "", move), u="%s/#%s" % (t["slug"], pid)))
     if faq:
         body.append(
             '<section id="symptoms"><h2 id="symptoms">Symptom &rarr; move</h2>'
-            '<p>Every failure this sheet answers, in the words you would type into a search box. '
-            'Deep-link any one of them, or scan <a href="../symptoms/">all %d symptoms across every sheet</a>.</p>'
+            '<p>Every failure this sheet answers, phrased the way it appears in a terminal. '
+            'Link to any one of them, or scan <a href="../symptoms/">all %d symptoms across every sheet</a>.</p>'
             '<div class="faq">%s</div></section>' % (stats["patterns"], "".join(faq)))
 
     rel = "".join(
@@ -425,10 +539,10 @@ def build_topic(t, stats, patterns_all):
 
     body.append("""<section id="next">
 <h2 id="next">Related sheets</h2>
-<p>Sessions rarely stay inside one tool. These are the sheets most often open in the next terminal tab.</p>
+<p>Work rarely stays inside one tool. These are the sheets most often open alongside this one.</p>
 <div class="related">%s</div>
 <div class="pagecta">
-<p><strong>Did this command work for you?</strong> A star tells me which sheets are worth extending. A wrong command deserves an issue — I would rather fix it than have you find out on a live cluster.</p>
+<p><strong>Did this resolve it?</strong> Stars indicate which sheets are worth extending. If a command here is wrong, or destructive without saying so, open an issue — I would rather fix it than have someone find out on a live system.</p>
 <div style="display:flex;gap:.6rem;flex-wrap:wrap">
 <a class="btn" href="%s" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
 <a class="btn btn--ghost" href="%s/issues/new?labels=correction&amp;title=%s" target="_blank" rel="noopener">Report a wrong command</a>
@@ -461,6 +575,7 @@ def build_topic(t, stats, patterns_all):
     page = head(t["title"] + " | commands-cheat-sheet", t["desc"], t["slug"], t["kw"], ld,
                 hue=hue_style(t["slug"]))
     page += masthead(t["slug"])
+    page += shell_open(t["slug"], railsecs, t["slug"])
     page += """<main id="main"><div class="shell">
 <nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>%(name)s</span></nav>
 <div class="topichead">
@@ -468,15 +583,10 @@ def build_topic(t, stats, patterns_all):
 <h1>%(title)s</h1>
 <p class="lede">%(blurb)s</p>
 </div>
-<div class="doc">
-<aside class="toc" aria-label="On this page"><h4>On this page</h4><ul>%(toc)s</ul>
-<h4>Other sheets</h4><ul>%(others)s</ul></aside>
-<div class="prose">%(body)s</div>
-</div></div></main>""" % dict(
+<div class="doc"><div class="prose">%(body)s</div></div>
+</div></main>""" % dict(
         name=html.escape(t["name"]), title=html.escape(title), blurb=html.escape(t["blurb"]),
-        cmds=stats["cmds"], pats=len(patterns), toc=toc, body="\n".join(body),
-        others="".join('<li><a href="../%s/">%s</a></li>' % (o["slug"], o["name"])
-                       for o in TOPICS if o["slug"] != t["slug"]))
+        cmds=stats["cmds"], pats=len(patterns), body="\n".join(body))
     page += footer(t["slug"])
 
     d = os.path.join(OUT, t["slug"])
@@ -544,30 +654,37 @@ def build_index(stats, totals):
                '{"@type":"ListItem","position":%d,"name":%s,"url":"%s%s/"}'
                % (i + 1, jsonstr(t["name"]), BASE, t["slug"]) for i, t in enumerate(TOPICS)))
 
-    page = head("commands-cheat-sheet — Commands that were run, not written", INDEX_DESC, "",
+    page = head("Command Cheat Sheets: OpenShift, Linux, Podman, Vault, OCI, curl and more", INDEX_DESC, "",
                 "command cheat sheet, oc commands, podman commands, vault commands, linux commands, "
                 "devops cheat sheet, field tested commands, destructive command warnings", ld,
                 hue=hue_style())
     page += masthead("")
+    page += shell_open("", [("why", "Why this exists"), ("sheets", "The sheets"),
+                            ("pipeline", "How a sheet is made"), ("ask", "Ask a question")])
     page += """<main id="main">
 
-<section class="hero"><div class="shell"><div class="hero__grid">
+<section class="hero"><div class="shell">
+<p class="eyebrow"><span class="tick">&#9679;</span> %(sheets)d technologies &middot; %(cmds)d commands &middot; %(pats)d problems solved</p>
+<h1 class="hero__h1">
+<span>Namespace stuck <em>Terminating</em>.</span>
+<span>Port already in use.</span>
+<span>A CORS error with no detail.</span>
+</h1>
+<div class="hero__grid">
 <div>
-<p class="eyebrow"><span class="tick">&#9679;</span> %(sheets)d sheets &middot; %(cmds)d commands &middot; %(pats)d symptoms &middot; 0 invented</p>
-<h1>These commands were <em>run</em>, not written.</h1>
-<p class="lede">%(cmds)d commands lifted from real terminal sessions on real clusters and real machines &mdash; each one traceable to the line it was typed on, and each destructive one labelled with what it actually costs you.</p>
+<p class="lede">One notebook, %(sheets)d technologies &mdash; clusters, hosts, containers, secrets, builds and HTTP. Every command is recorded with what it does, the problem it resolves, and the session it came from.</p>
 <div class="hero__cta">
-<a class="btn" href="%(gh)s" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repository</a>
-<a class="btn btn--ghost" href="#sheets">Open a cheat sheet</a>
+<a class="btn" href="%(gh)s" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star on GitHub</a>
+<a class="btn btn--ghost" href="#sheets">Browse the cheat sheets</a>
 </div>
-<p class="hero__meta">Free, MIT-ish, no signup, no tracking. Works fine at 2am.</p>
+<p class="hero__meta">No sign-up. No tracking. No analytics.</p>
 </div>
 
 <div class="record">
-<div class="record__bar"><span class="record__dot"></span> Record &mdash; openshift / finalizers</div>
+<div class="record__bar"><span class="record__dot"></span> Anatomy of an entry &middot; example from OpenShift</div>
 <div class="record__row">
 <span class="record__k">Symptom</span>
-<p class="record__symptom">Namespace has sat in <code>Terminating</code> for forty minutes and will not go.</p>
+<p class="record__symptom">A namespace has been <code>Terminating</code> for forty minutes and will not delete.</p>
 </div>
 <hr class="perf">
 <div class="record__row">
@@ -582,7 +699,7 @@ done</code></pre>
 </div>
 <hr class="perf">
 <div class="record__hazard">
-<span class="record__k">What it costs you</span>
+<span class="record__k">Consequence</span>
 <p>Orphans every resource the app managed. ArgoCD stops tracking them and will never prune or reconcile them again. Delete the workload properly first if you can.</p>
 </div>
 <hr class="perf">
@@ -592,10 +709,10 @@ done</code></pre>
 </div>
 
 <div class="tally">
-<div><b>%(sheets)d</b><span>Sheets</span></div>
+<div><b>%(sheets)d</b><span>Technologies</span></div>
 <div><b>%(cmds)d</b><span>Commands</span></div>
-<div><b>%(pats)d</b><span>Symptoms answered</span></div>
-<div><b>0</b><span>Invented</span></div>
+<div><b>%(pats)d</b><span>Problems solved</span></div>
+<div><b>100%%</b><span>Traced to source</span></div>
 </div>
 
 </div></div></section>
@@ -603,36 +720,36 @@ done</code></pre>
 <section class="band" id="why"><div class="shell">
 <div class="band__head">
 <p class="eyebrow">Why this exists</p>
-<h2>The command you need already worked once. You just cannot find it.</h2>
+<h2>The command exists. Finding it again is the problem.</h2>
 </div>
 <div class="acts">
 
 <div class="act">
 <div class="act__label">The problem</div>
 <div>
-<h3>Search gives you documentation, not experience.</h3>
-<p>Something is broken and you have maybe ten minutes. What comes back is the official reference reprinted by a content farm, a confidently wrong answer with syntax that has never existed, and a thread from 2019 about a version you are not running.</p>
-<p>The command that actually fixed this last time was in a scrollback buffer you closed three months ago.</p>
+<h3>Documentation is organised by flag. Problems are not.</h3>
+<p>Every tool in the stack fails in a small number of recognisable ways, and the command that resolves each one already exists. It has usually been run before, on this machine, by you. Retrieval is the constraint, not knowledge.</p>
+<p>Vendor references index by subcommand and flag. The problem in front of you presents as a symptom, and the session where it was last resolved is three months gone.</p>
 </div>
 </div>
 
 <div class="act">
 <div class="act__label">What it costs</div>
 <div>
-<h3>The dangerous commands are the ones that look scoped.</h3>
-<p>Untested commands rarely fail loudly. They fail quietly, and later, and somewhere else.</p>
+<h3>A command without its context is not reusable.</h3>
+<p>A command saved with no note about what it was for, which problem it closed, or what it removes is a liability rather than an asset. It gets pasted into the wrong situation, or into a live system whose blast radius nobody wrote down.</p>
 <p class="act__quote">oc delete crd applications.argoproj.io<br><span style="color:var(--hazard)">&rarr; deletes every ArgoCD Application on the cluster, in every namespace. There is no per-namespace opt-out.</span></p>
-<p>The page you copied that from did not tell you, because nobody who wrote it had run it anywhere that mattered. Same story for <code>podman rm -a</code>, which removes every stopped container on the host rather than the one you were debugging, and <code>sudo fuser -k &lt;PORT&gt;/tcp</code>, which kills whatever holds the port with no graceful shutdown and no prompt.</p>
+<p><code>podman rm -a</code> removes every stopped container on the host, not the one being debugged. <code>sudo fuser -k &lt;PORT&gt;/tcp</code> kills whatever holds the port, with no graceful shutdown and no prompt. Each is correct, and each is documented. What is absent from the documentation is what it takes with it.</p>
 </div>
 </div>
 
 <div class="act act--solve">
 <div class="act__label">What this is</div>
 <div>
-<h3>%(sheets)d sheets, %(cmds)d commands, every one of them traceable.</h3>
-<p>Each command here came out of a recorded terminal session and carries a reference back to the dump line it was typed on. Commands that cannot be traced never make it onto the page &mdash; that rule is enforced by a pipeline, not by good intentions.</p>
-<p>Where a command is strange but worked, it is kept and flagged rather than quietly corrected: <a href="ruby/">a <code>sudo gem install --user-install</code> whose flags contradict each other</a> is still what ran successfully on the machine it was recorded from. Where a command destroys something, the sheet says exactly what.</p>
-<p><a href="#sheets">Start with a sheet</a>, or go straight to <a href="symptoms/">the symptom index</a> if you already know what is broken.</p>
+<h3>A working notebook: %(cmds)d commands across %(sheets)d technologies.</h3>
+<p>Each entry records four things: the command, what it is for, the problem it resolves, and the session it came from. Where a command destroys something, the entry states what. A command that cannot be traced does not reach the page, and that rule is enforced by the build rather than by intent.</p>
+<p>Where a command is unusual but worked, it is kept and annotated rather than corrected. <a href="ruby/">A <code>sudo gem install --user-install</code> whose flags contradict each other</a> is still what ran successfully on the machine it was recorded from.</p>
+<p><a href="#sheets">Start with a cheat sheet</a>, or open <a href="symptoms/">the symptom index</a> if the problem is already in front of you.</p>
 </div>
 </div>
 
@@ -641,40 +758,40 @@ done</code></pre>
 
 <section class="band band--sunk" id="sheets"><div class="shell">
 <div class="band__head">
-<p class="eyebrow">The sheets</p>
-<h2>Pick the tool that is currently lying to you.</h2>
-<p class="lede">Every sheet opens with the failure it exists to answer, then the commands, then a symptom-to-move table you can scan in a hurry.</p>
+<p class="eyebrow">The cheat sheets</p>
+<h2>Nine technologies, indexed by problem.</h2>
+<p class="lede">Clusters, hosts, containers, secrets, cloud CLIs, builds and HTTP. Each sheet opens with the problems it answers, then the commands with what each is for, then a symptom-to-command table built for scanning under pressure.</p>
 </div>
 <div class="sheets">%(sheets_html)s%(planned)s</div>
-<p style="margin-top:1.5rem;font-size:.92rem;color:var(--muted)">Looking for something specific? <a href="symptoms/">All %(pats)d symptoms across every sheet, on one page</a>.</p>
+<p style="margin-top:1.5rem;font-size:.92rem;color:var(--muted)">Searching for something specific? <a href="symptoms/">All %(pats)d symptoms, across every sheet, on one page</a>.</p>
 </div></section>
 
 <section class="band" id="pipeline"><div class="shell">
 <div class="band__head">
-<p class="eyebrow">How a sheet is made</p>
-<h2>Four stages, and a command can only survive all four by being real.</h2>
-<p class="lede">This is a genuine sequence &mdash; each stage can only run on the output of the one before it, and the third stage physically cannot emit a command the second one did not record.</p>
+<p class="eyebrow">How a sheet is built</p>
+<h2>Four stages. A command reaches the page only by surviving all four.</h2>
+<p class="lede">Each stage runs on the output of the one before it. The third stage cannot emit a command that the second one did not record.</p>
 </div>
 <div class="pipe">
-<div class="pipe__step"><span class="pipe__n">STAGE 1</span><h3>Record</h3><p>A real working session is dumped to <code>_sources/</code>. Those dumps hold live tokens and hostnames, so they are gitignored and never leave the machine.</p></div>
+<div class="pipe__step"><span class="pipe__n">STAGE 1</span><h3>Record</h3><p>A working session is captured to <code>_sources/</code>. Those captures hold live tokens and hostnames, so they are gitignored and never leave the machine.</p></div>
 <div class="pipe__step"><span class="pipe__n">STAGE 2</span><h3>Extract</h3><p>Each command is structured into <code>commands.yml</code> with a <code>source_ref</code> pointing at its dump line. Credentials and identifiers are replaced here, once, at the only stage that reads raw source.</p></div>
-<div class="pipe__step"><span class="pipe__n">STAGE 3</span><h3>Write</h3><p>The sheet is generated from that file alone. No <code>source_ref</code>, no output &mdash; which is why a plausible-sounding command that nobody ran cannot appear.</p></div>
-<div class="pipe__step"><span class="pipe__n">STAGE 4</span><h3>Audit</h3><p>A reviewer reads the raw dump rather than a summary and diffs it against the sheet in both directions: invented commands and dropped ones. It reports; it never rewrites a working command.</p></div>
+<div class="pipe__step"><span class="pipe__n">STAGE 3</span><h3>Write</h3><p>The sheet is generated from that file alone. No <code>source_ref</code>, no output. A plausible command that was never run has no way onto the page.</p></div>
+<div class="pipe__step"><span class="pipe__n">STAGE 4</span><h3>Audit</h3><p>A reviewer reads the raw session rather than a summary and compares it against the sheet in both directions: commands invented, and commands dropped. It reports. It does not rewrite a working command.</p></div>
 </div>
-<p style="margin-top:1.5rem;font-size:.92rem;color:var(--muted)">The pipeline is its own open-source project &mdash; <a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge</a> &mdash; if you want to run it against your own recorded sessions.</p>
+<p style="margin-top:1.5rem;font-size:.92rem;color:var(--muted)">The pipeline is an open-source project of its own, <a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge</a>, and can be run against your own recorded sessions.</p>
 </div></section>
 
 <section class="band band--sunk" id="ask"><div class="shell">
 <div class="ask">
 <div>
 <p class="eyebrow">Ask</p>
-<h2>Stuck on something that is not here yet?</h2>
-<p class="lede">Ask it as an issue. If the answer exists in a session I have recorded, it becomes a new entry on the relevant sheet, with its trace attached like everything else.</p>
-<p style="font-size:.93rem;color:var(--ink-2)">Three things that always get a reply:</p>
+<h2>Not covered here yet?</h2>
+<p class="lede">Open it as an issue. If a recorded session covers the answer, it becomes a new entry on the relevant sheet, with its trace attached like every other entry.</p>
+<p style="font-size:.93rem;color:var(--ink-2)">Three kinds of issue always get a reply:</p>
 <ul style="font-size:.93rem;color:var(--ink-2);padding-left:1.1rem">
-<li><strong>A command here did not work.</strong> That is a defect and I want it.</li>
-<li><strong>A command here is dangerous and not labelled.</strong> That is the worst kind of bug on this site.</li>
-<li><strong>A technology you want covered.</strong> Requests decide what gets recorded next.</li>
+<li><strong>A command here did not work.</strong> That is a defect, and I want the issue.</li>
+<li><strong>A command here is destructive and not labelled as such.</strong> That is the most serious defect this site can have.</li>
+<li><strong>A technology you want covered.</strong> Requests determine what gets recorded next.</li>
 </ul>
 <p style="margin-top:1.6rem"><a class="btn" href="%(gh)s" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repository</a></p>
 </div>
@@ -692,16 +809,16 @@ done</code></pre>
 <textarea id="q-body" name="body" placeholder="Paste the command you ran and what it printed."></textarea>
 </div>
 <button class="btn" type="submit">Open this as a GitHub issue</button>
-<p class="form__note">This fills in a GitHub issue and opens it in a new tab &mdash; nothing is sent anywhere until you press submit there. No form data touches this site; there is no backend and no analytics.</p>
+<p class="form__note">This composes a GitHub issue and opens it in a new tab. Nothing is sent until you submit it there. No form data reaches this site, which has no backend and no analytics.</p>
 </form>
 </div>
 </div></section>
 
 <section class="band"><div class="shell">
 <div class="endcta">
-<p class="eyebrow">One click</p>
-<h2>If one command here saved you an hour, star it.</h2>
-<p class="lede" style="margin-inline:auto">Stars are the only signal I get about which sheets are worth extending. There is no analytics on this site, so the alternative is guessing.</p>
+<p class="eyebrow">Contribute</p>
+<h2>Stars decide which sheets get extended.</h2>
+<p class="lede" style="margin-inline:auto">This site carries no analytics. Stars and issues are the only signal about which sheets are worth the next recorded session.</p>
 <div class="hero__cta">
 <a class="btn" href="%(gh)s" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star on GitHub</a>
 <a class="btn btn--ghost" href="%(gh)s/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a>
@@ -715,9 +832,9 @@ done</code></pre>
     open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(page)
 
 
-INDEX_DESC = ("Cheat sheets for OpenShift, Linux, Podman, Vault, OCI, npm, Flutter, Ruby and curl "
-              "built only from recorded terminal sessions. Every command traces back to the line it was "
-              "typed on, and every destructive one says what it actually costs you.")
+INDEX_DESC = ("A working notebook of commands for OpenShift, Linux, Podman, Vault, OCI, npm, Flutter, Ruby "
+              "and curl. Each entry records the command, what it is for, the problem it resolves, and the "
+              "session it came from, with every destructive command stating its consequence.")
 
 
 def build_symptoms(patterns_all, totals):
@@ -762,17 +879,18 @@ def build_symptoms(patterns_all, totals):
                 "argocd sync stuck, port already in use, gem command not found", ld,
                 hue=hue_style())
     page += masthead("symptoms")
+    page += shell_open("symptoms", [(t["slug"], t["name"]) for t in TOPICS])
     page += """<main id="main"><div class="shell">
 <nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Symptom index</span></nav>
 <div class="topichead">
 <p class="eyebrow"><span class="tick">&#9679;</span> %(n)d symptoms &middot; %(t)d technologies &middot; one page</p>
-<h1>Start from what is broken.</h1>
-<p class="lede">You rarely arrive knowing which tool is at fault &mdash; you arrive with an error message. This is every symptom the sheets answer, grouped by technology, each one linking straight to the command that resolves it.</p>
+<h1>Start from the error message.</h1>
+<p class="lede">You rarely arrive knowing which tool is at fault. This is every symptom the cheat sheets answer, grouped by technology, each linking to the command that resolves it.</p>
 </div>
 <nav class="jump" aria-label="Jump to a technology">%(jump)s</nav>
 %(groups)s
 <div class="pagecta">
-<p><strong>Your symptom is not on this list?</strong> Open it as a question. If a recorded session covers it, it becomes a new entry here.</p>
+<p><strong>Symptom not on this list?</strong> Open it as a question. If a recorded session covers it, it becomes a new entry here.</p>
 <div style="display:flex;gap:.6rem;flex-wrap:wrap">
 <a class="btn" href="%(gh)s/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a>
 <a class="btn btn--ghost" href="%(gh)s" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star the repo</a>
@@ -787,13 +905,14 @@ def build_symptoms(patterns_all, totals):
 
 def build_404():
     page = head("Page not found | commands-cheat-sheet",
-                "That page does not exist. Every cheat sheet is listed here.", "",
+                "No page at that address. Every cheat sheet on the site is listed here.", "",
                 hue=hue_style())
     page += masthead("")
+    page += shell_open("")
     page += """<main id="main"><div class="shell"><div class="topichead" style="padding-top:5rem">
 <p class="eyebrow">404</p>
-<h1>No such page.</h1>
-<p class="lede">Nothing at that address. Here is everything that does exist.</p>
+<h1>No page at that address.</h1>
+<p class="lede">Every cheat sheet is listed below.</p>
 </div>
 <div class="sheets">%s</div>
 <p style="margin:1.5rem 0 5rem"><a href="/commands-cheat-sheet/symptoms/">Or search by symptom &rarr;</a></p>
@@ -824,8 +943,18 @@ def build_meta(mtimes):
     open(os.path.join(OUT, ".nojekyll"), "w").write("")
 
 
+def build_search_index(idx):
+    """One JSON file holding every command, symptom and section on the site.
+    At this size a prebuilt index beats any search library: it loads once, on
+    first keystroke, and filtering runs in memory."""
+    payload = {"v": 1, "e": idx}
+    out = json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
+    open(os.path.join(OUT, "search-index.json"), "w", encoding="utf-8").write(out)
+    return len(idx), len(out.encode("utf-8"))
+
+
 def main():
-    stats, patterns_all, mtimes = {}, [], {}
+    stats, patterns_all, mtimes, idx = {}, [], {}, []
     totals = dict(cmds=0, patterns=0)
 
     for t in TOPICS:
@@ -843,10 +972,12 @@ def main():
         stats[t["slug"]]["patterns"] = len(parse(md)[3])
         totals["patterns"] += stats[t["slug"]]["patterns"]
 
+    STATS.update(stats)
+
     for t in TOPICS:
         s = dict(stats[t["slug"]])
         s["patterns"] = totals["patterns"]   # used in the cross-link sentence
-        build_topic(t, s, patterns_all)
+        build_topic(t, s, patterns_all, idx)
 
     build_index(stats, totals)
     build_symptoms(patterns_all, totals)
@@ -856,7 +987,10 @@ def main():
     mtimes["symptoms/"] = newest
     build_meta(mtimes)
 
+    n, size = build_search_index(idx)
+
     print("built %d topic pages + index + symptom index" % len(TOPICS))
+    print("  search:   %d entries, %.1f KB" % (n, size / 1024))
     print("  commands: %d   symptoms: %d" % (totals["cmds"], totals["patterns"]))
     print("  output:   %s" % OUT)
 
