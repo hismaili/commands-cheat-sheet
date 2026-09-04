@@ -285,6 +285,149 @@ Do not start deleting credentials at random. Go left to right; the first step th
 
 ---
 
+## Rewriting pushed history starts with a backup
+
+Rewriting commits that have already been pushed replaces history on the remote — the old commits become unreachable. Someone who already pulled the old history will have to reset onto the new one. Start from a clean state and keep a branch you can reset to.
+
+```bash
+# Fetch everything and confirm the working tree is clean
+git fetch --all
+git status  # must be clean — commit or stash pending changes first
+
+# Keep a branch you can reset to if the rewrite goes wrong
+git branch backup-before-rewrite
+
+# Inspect recent history and which remote the branch tracks
+git log --oneline --graph --all -10
+git branch -vv
+git log --oneline origin/<BRANCH>..HEAD  # commits not yet on origin
+git log --oneline -10                    # pick hashes you want to reword
+```
+
+Check `git remote -v` first if you have two remotes — the remote you push to later determines which upstream loses the old commits.
+
+---
+
+## Rewording commits that have already been pushed
+
+Pick the scenario that matches how far back the message to fix is. Local rebase changes only local history; the remote only changes when you force-push.
+
+```bash
+# Scenario A — only the last pushed commit: amend the message in place
+git commit --amend -m "<MESSAGE>"
+git log --oneline -3  # verify new message
+```
+
+```bash
+# Scenario B — last N commits (e.g. last 3): interactive rebase
+git rebase -i HEAD~3
+# editor opens — replace pick with reword (or r) for each commit to edit:
+# pick a1b2c3 old message 1
+# reword d4e5f6 old message 2
+# reword 789abc old message 3
+# save and close → Git opens a message editor for each reword sequentially
+```
+
+```bash
+# Scenario C — older commits / all commits of branch: rebase onto remote base or a hash
+git rebase -i origin/<BRANCH>
+# or: rebase onto parent of oldest commit to reword
+git rebase -i <HASH>^
+```
+
+If a rebase conflicts:
+
+```bash
+# fix files, then continue; abort anytime to return to pre-rebase state
+git add .
+git rebase --continue
+git rebase --abort
+```
+
+---
+
+## Replacing the remote branch — force-with-lease to one remote only
+
+A rebase rewrites local history. The `push` you choose determines what gets overwritten on the remote; the other remote stays untouched. Prefer `--force-with-lease` — it refuses if someone else pushed since your last fetch.
+
+```bash
+# Push the rewritten branch to one explicitly named remote
+git push --force-with-lease <REMOTE> <BRANCH>
+# explicit refspec — same result
+git push --force-with-lease <REMOTE> HEAD:<BRANCH>
+```
+
+**Consequence —** `--force-with-lease` (and `--force`) removes the old commits from the targeted remote branch. They remain dangling on the server until garbage collection and may still resolve by hash for a few hours, but they are no longer reachable from the branch.
+
+```bash
+# Two remotes: origin is your fork, second is the upstream / client
+# overwrite ONLY origin, upstream keeps old history
+git push --force-with-lease origin <BRANCH>
+
+# overwrite ONLY second remote
+git push --force-with-lease second <BRANCH>
+
+# Do NOT use when you want to target one remote only:
+# git push --all --force  ← pushes to every remote
+```
+
+Before pushing, check whether an unqualified `git push` would hit both remotes:
+
+```bash
+# does pushDefault or multiple push URLs fan out silently?
+git config --get-regexp push
+git config --get-regexp remote
+```
+
+---
+
+## Verifying the rewrite, cleaning up, and recovering
+
+Confirm the remote now points at the new history. Code should be identical — only messages changed.
+
+```bash
+# Verify the targeted remote
+git fetch <REMOTE>
+git log --oneline origin/<BRANCH> -10
+git log --oneline second/<BRANCH> -10  # compare second remote if it exists
+git diff backup-before-rewrite --stat  # should show no code diff, only messages
+```
+
+If verified, delete the backup:
+
+```bash
+git branch -D backup-before-rewrite
+```
+
+**Consequence —** `-D` deletes the branch even if it is not fully merged. The reflog still holds the old history for a while, but the named recovery point is gone.
+
+If something went wrong, restore from the backup or the reflog, then force-push the restoration:
+
+```bash
+# Find previous HEAD if you no longer have the backup branch
+git reflog
+
+# Restore local branch and restore the remote
+git reset --hard backup-before-rewrite
+git push --force-with-lease <REMOTE> <BRANCH>
+
+# or abort an ongoing rebase
+git rebase --abort
+```
+
+**Consequence —** `git reset --hard` discards all commits and uncommitted changes on the current branch after the target. Nothing is staged, nothing is stashed — it is replaced.
+
+What collaborators who already pulled the old history must do — `pull` will merge old and new into a duplicate:
+
+```bash
+# For teammates who already pulled old history
+git fetch --all
+git checkout <BRANCH>
+git reset --hard origin/<BRANCH>
+```
+
+---
+
 ## Key Patterns
 
 | Symptom | Move |
@@ -308,3 +451,12 @@ Do not start deleting credentials at random. Go left to right; the first step th
 | Chasing an SSH failure through the Keychain | Wrong layer — `git config --global credential.helper` serves HTTPS only |
 | Stale HTTPS credential cached | `git credential-osxkeychain erase` (deletes it; token may need reissuing) |
 | HTTPS clone rejects the password | It wants a personal access token, and for a SAML org one authorized for that org |
+| Need to rewrite a commit message already pushed | `git commit --amend -m "<MESSAGE>"` for last commit; `git rebase -i HEAD~<N>` for last N, `git rebase -i origin/<BRANCH>` for older — then force-push |
+| Rebase conflicts mid-rewrite | Fix files, `git add . && git rebase --continue`; abort with `git rebase --abort` |
+| Rewritten history must replace only one remote | `git push --force-with-lease <REMOTE> <BRANCH>` (or `HEAD:<BRANCH>`) — never `git push --all --force` |
+| Unsure whether `git push` will hit both remotes | `git config --get-regexp push` and `git config --get-regexp remote` |
+| Rewrite pushed history safely | `git fetch --all && git branch backup-before-rewrite` before rebase; verify with `git fetch <REMOTE> && git log --oneline origin/<BRANCH> -10` |
+| Verify rewrite kept code identical | `git diff backup-before-rewrite --stat` (no code diff, only messages); `git log --oneline --graph --all -10` |
+| Recovery after a bad rewrite | `git reflog` → `git reset --hard backup-before-rewrite` → `git push --force-with-lease <REMOTE> <BRANCH>` |
+| Collaborator already pulled old history | They must `git fetch --all && git checkout <BRANCH> && git reset --hard origin/<BRANCH>` — not `git pull` |
+| Which commits are not yet on the remote | `git log --oneline origin/<BRANCH>..HEAD` and `git branch -vv` |
