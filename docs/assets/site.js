@@ -32,6 +32,34 @@
     });
   }
 
+  /* --- top-bar dropdowns: Cheat Sheets / Tutorials ------------------------ */
+  document.querySelectorAll('[data-navdrop]').forEach(function (drop) {
+    var btn = drop.querySelector('.navdrop__btn');
+    var panel = drop.querySelector('.navdrop__panel');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', function (e) {
+      var open = drop.getAttribute('data-open') === '1';
+      document.querySelectorAll('[data-navdrop][data-open="1"]').forEach(function (d) {
+        if (d !== drop) { d.removeAttribute('data-open'); d.querySelector('.navdrop__panel').hidden = true; d.querySelector('.navdrop__btn').setAttribute('aria-expanded','false'); }
+      });
+      if (open) { drop.removeAttribute('data-open'); panel.hidden = true; btn.setAttribute('aria-expanded','false'); }
+      else { drop.setAttribute('data-open','1'); panel.hidden = false; btn.setAttribute('aria-expanded','true'); }
+      e.stopPropagation();
+    });
+  });
+  document.addEventListener('click', function () {
+    document.querySelectorAll('[data-navdrop][data-open="1"]').forEach(function (d) {
+      d.removeAttribute('data-open'); d.querySelector('.navdrop__panel').hidden = true; d.querySelector('.navdrop__btn').setAttribute('aria-expanded','false');
+    });
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') {
+      document.querySelectorAll('[data-navdrop][data-open="1"]').forEach(function (d) {
+        d.removeAttribute('data-open'); d.querySelector('.navdrop__panel').hidden = true; d.querySelector('.navdrop__btn').setAttribute('aria-expanded','false');
+      });
+    }
+  });
+
   /* --- copy a command block --------------------------------------------- */
   document.addEventListener('click', function (ev) {
     var btn = ev.target.closest('.copy');

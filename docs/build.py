@@ -87,6 +87,18 @@ TOPICS = [
          kw="git multiple remotes, git remote set-url --add --push, ssh host alias multiple github accounts, IdentitiesOnly yes, git includeIf gitdir, github saml sso ssh key authorization",
          related=["linux", "openshift", "oci"]),
 ]
+# Tutorials — step-by-step guides that complement the cheat sheets.
+# Each entry is a standalone HTML file at <topic>/tutorials/<slug>.html
+# rendered inside the site chrome with scoped dark vars (preserves original #0d1117).
+TUTORIALS = [
+    dict(slug="rewrite-pushed-commits", topic="git", name="Rewrite Pushed Commit Messages",
+         file="git/tutorials/rewrite-pushed-commits.html",
+         title="Git: Rewrite Pushed Commit Messages — Amend, Rebase, Force-With-Lease (Dual-Remote)",
+         desc="Step-by-step to reword commits already pushed and replace one remote with git push --force-with-lease, with backup, verification and collaborator reset.",
+         kw="git commit amend pushed, git rebase reword, git push force with lease one remote, git reset hard origin",
+         date="2026-09-04"),
+]
+
 # Directories that exist but hold no recorded sessions yet.
 PLANNED = [
     dict(slug="kafka", name="Kafka", why="No session has been recorded yet."),
@@ -127,6 +139,9 @@ def hue_style(slug=None):
 
 
 BY_SLUG = {t["slug"]: t for t in TOPICS}
+TUTS_BY_TOPIC = {}
+for _tut in TUTORIALS:
+    TUTS_BY_TOPIC.setdefault(_tut["topic"], []).append(_tut)
 
 
 # ---------------------------------------------------------------------------
@@ -317,7 +332,7 @@ def render(blocks, cmd_counter, idx=None, tslug="", tname=""):
 # Page chrome
 # ---------------------------------------------------------------------------
 def head(title, desc, path, kw="", extra_ld="", hue=""):
-    up = "../" if path else ""
+    up = get_up(path)
     canon = BASE + (path + "/" if path else "")
     return """<!doctype html>
 <html lang="en">
@@ -351,12 +366,18 @@ def head(title, desc, path, kw="", extra_ld="", hue=""):
 
 STATS = {}          # slug -> {"cmds": n, "patterns": n, ...}; filled by main()
 
+def get_up(path):
+    if not path:
+        return ""
+    if "/" not in path:
+        return "../"
+    return "../" * (path.count("/") + 1)
 
 def rail(path, sections=None, slug=None):
     """The left rail: search, every sheet, and — on a content page — its own
     sections. One component on every page, so the topic list is never more than
     a glance away and every page carries the same nine internal links."""
-    up = "../" if path else ""
+    up = get_up(path)
     sheets = "".join(
         '<li><a class="t-%s%s" href="%s%s/"><i class="dot"></i><span>%s</span>'
         '<b>%s</b></a></li>'
@@ -416,9 +437,35 @@ def shell_open(path, sections=None, slug=None):
 
 
 def masthead(path):
-    up = "../" if path else ""
+    up = get_up(path)
     def cur(p):
         return ' aria-current="page"' if p == path else ""
+    # Build dropdown items — crawlable <a> only, disabled as gray <span>
+    cs_items = "".join(
+        '<li><a class="t-%s" href="%s%s/"><i class="dot"></i><span>%s</span><b>%s</b></a></li>' % (
+            t["slug"], up, t["slug"], html.escape(t["name"]), STATS.get(t["slug"], {}).get("cmds",""))
+        for t in TOPICS)
+    cs_items += "".join(
+        '<li><a class="t-%s rail__soon" href="%s/issues/new?labels=request&amp;title=%%5B%s%%5D%%20" target="_blank" rel="noopener"><i class="dot"></i><span>%s</span><b>&mdash;</b></a></li>' % (
+            pl["slug"], GH, pl["name"], html.escape(pl["name"])) for pl in PLANNED)
+    tut_items = ""
+    for t in TOPICS:
+        n = len(TUTS_BY_TOPIC.get(t["slug"], []))
+        if n:
+            tut_items += '<li><a class="t-%s" href="%s%s/tutorials/"><i class="dot"></i><span>%s</span><b>%d</b></a></li>' % (
+                t["slug"], up, t["slug"], html.escape(t["name"]), n)
+        else:
+            tut_items += '<li><span class="navdrop__soon t-%s"><i class="dot"></i><span>%s</span><b>&mdash;</b></span></li>' % (
+                t["slug"], html.escape(t["name"]))
+    # kafka planned as disabled as requested
+    for pl in PLANNED:
+        n = len(TUTS_BY_TOPIC.get(pl["slug"], []))
+        if n:
+            tut_items += '<li><a class="t-%s" href="%s%s/tutorials/"><i class="dot"></i><span>%s</span><b>%d</b></a></li>' % (
+                pl["slug"], up, pl["slug"], html.escape(pl["name"]), n)
+        else:
+            tut_items += '<li><span class="navdrop__soon t-%s"><i class="dot"></i><span>%s</span><b>&mdash;</b></span></li>' % (
+                pl["slug"], html.escape(pl["name"]))
     return """<header class="masthead"><div class="shell masthead__in">
 <button class="burger" type="button" data-drawer aria-controls="rail" aria-expanded="false">
 <span></span><span></span><span></span><span class="sr">Sheets and search</span>
@@ -428,15 +475,29 @@ def masthead(path):
 <button class="findbtn" type="button" data-palette-open>
 <span aria-hidden="true">&#9906;</span> Search <kbd>&#8984;K</kbd>
 </button>
+<div class="navdrop" data-navdrop>
+<button class="navdrop__btn" type="button" aria-expanded="false" aria-haspopup="true">Cheat Sheets <span aria-hidden="true">▾</span></button>
+<div class="navdrop__panel" hidden>
+<ul class="navdrop__list">%(cs_items)s</ul>
+<div class="navdrop__foot"><a href="%(up)scheatsheets/">All cheat sheets →</a></div>
+</div>
+</div>
+<div class="navdrop" data-navdrop>
+<button class="navdrop__btn" type="button" aria-expanded="false" aria-haspopup="true">Tutorials <span aria-hidden="true">▾</span></button>
+<div class="navdrop__panel" hidden>
+<ul class="navdrop__list">%(tut_items)s</ul>
+<div class="navdrop__foot"><a href="%(up)stutorials/">All tutorials →</a></div>
+</div>
+</div>
 <a href="%(up)ssymptoms/"%(sym)s>Symptoms</a>
 <a class="opt" href="%(up)s#ask">Ask</a>
 <button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
 <a class="btn btn--sm" href="%(gh)s" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
-</nav></div></header>""" % dict(up=up, gh=GH, s="", sym=cur("symptoms"))
+</nav></div></header>""" % dict(up=up, gh=GH, s="", sym=cur("symptoms"), cs_items=cs_items, tut_items=tut_items)
 
 
 def footer(path):
-    up = "../" if path else ""
+    up = get_up(path)
     cols = "".join(
         '<li><a href="%s%s/">%s</a></li>' % (up, t["slug"], t["name"]) for t in TOPICS)
     return """<footer class="footer"><div class="shell">
@@ -577,6 +638,13 @@ def build_topic(t, stats, patterns_all, idx):
            kw=jsonstr(t["kw"]), nm=jsonstr(t["name"]),
            faq=("," + faq_ld) if faq_ld else "")
 
+    # tutorials pill for this topic (pSEO cross-link)
+    n_tuts = len(TUTS_BY_TOPIC.get(t["slug"], []))
+    tut_pill = ''
+    if n_tuts:
+        tut_pill = '<p style="margin-top:.6rem"><a class="btn btn--ghost" href="tutorials/">Tutorials <span style="background:var(--topic);color:var(--ground);padding:1px 6px;border-radius:20px;font-size:.7rem;margin-left:.3rem">%d</span></a></p>' % n_tuts
+    else:
+        tut_pill = '<p style="margin-top:.6rem"><a class="btn btn--ghost" style="opacity:.6" href="tutorials/">Tutorials <span style="border:1px solid var(--rule);padding:1px 6px;border-radius:20px;font-size:.7rem;margin-left:.3rem">&mdash;</span></a></p>'
     page = head(t["title"] + " | commands-cheat-sheet", t["desc"], t["slug"], t["kw"], ld,
                 hue=hue_style(t["slug"]))
     page += masthead(t["slug"])
@@ -587,17 +655,228 @@ def build_topic(t, stats, patterns_all, idx):
 <p class="eyebrow"><span class="tick">&#9679;</span> %(cmds)d commands &middot; %(pats)d symptoms &middot; traced to source</p>
 <h1>%(title)s</h1>
 <p class="lede">%(blurb)s</p>
+%(tut_pill)s
 </div>
 <div class="doc"><div class="prose">%(body)s</div></div>
 </div></main>""" % dict(
         name=html.escape(t["name"]), title=html.escape(title), blurb=html.escape(t["blurb"]),
-        cmds=stats["cmds"], pats=len(patterns), body="\n".join(body))
+        cmds=stats["cmds"], pats=len(patterns), body="\n".join(body), tut_pill=tut_pill)
     page += footer(t["slug"])
 
     d = os.path.join(OUT, t["slug"])
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(page)
     return len(patterns), counter[0]
+
+
+def build_cheatsheets_hub(stats, totals, idx):
+    sheets = "".join("""<a class="sheet t-%(slug)s" href="../%(slug)s/">
+<span class="sheet__name">%(name)s</span>
+<p class="sheet__desc">%(blurb)s</p>
+<span class="sheet__foot"><span>%(cmds)d commands</span><span>%(pats)d symptoms</span>%(haz)s</span>
+</a>""" % dict(slug=t["slug"], name=html.escape(t["name"]), blurb=html.escape(t["blurb"]),
+               cmds=stats[t["slug"]]["cmds"], pats=stats[t["slug"]]["patterns"],
+               haz='<span class="haz">%d flagged destructive</span>' % stats[t["slug"]]["destructive"]
+                   if stats[t["slug"]]["destructive"] else "")
+        for t in TOPICS)
+    planned = "".join("""<a class="sheet sheet--empty t-%(slug)s" href="%(gh)s/issues/new?labels=request&amp;title=%%5B%(name)s%%5D%%20" target="_blank" rel="noopener">
+<span class="sheet__name">%(name)s</span>
+<p class="sheet__desc">The directory exists and the pipeline is configured for it. %(why)s Open an issue and it moves up.</p>
+<span class="sheet__foot"><span>Not recorded yet</span><span>Request it &rarr;</span></span>
+</a>""" % dict(gh=GH, name=p["name"], why=p["why"], slug=p["slug"]) for p in PLANNED)
+    ld = """<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"CollectionPage","@id":"%(base)scheatsheets/#page","name":"Cheat Sheets","url":"%(base)scheatsheets/",
+ "description":%(d)s,"isPartOf":{"@type":"WebSite","@id":"%(base)s#site"}},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"%(base)s"}]},
+{"@type":"ItemList","name":"Cheat Sheets","numberOfItems":%(n)d,"itemListElement":[%(items)s]}
+]}</script>
+""" % dict(base=BASE, d=jsonstr("Every cheat sheet by topic — %d technologies, %d commands." % (len(TOPICS), totals["cmds"])),
+           n=len(TOPICS),
+           items=",".join('{"@type":"ListItem","position":%d,"name":%s,"url":"%s%s/"}' % (i+1, jsonstr(t["name"]), BASE, t["slug"]) for i,t in enumerate(TOPICS)))
+    page = head("Cheat Sheets — Every Topic | commands-cheat-sheet", "Every cheat sheet by topic.", "cheatsheets", "cheat sheets", ld, hue=hue_style())
+    page += masthead("cheatsheets")
+    page += shell_open("cheatsheets")
+    page += """<main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>All</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> %d technologies &middot; %d commands</p>
+<h1>Cheat Sheets</h1>
+<p class="lede">Every sheet is indexed by problem, not by flag. Pick a technology.</p>
+</div>
+<div class="sheets">%s%s</div>
+</div></main>""" % (len(TOPICS), totals["cmds"], sheets, planned)
+    page += footer("cheatsheets")
+    d = os.path.join(OUT, "cheatsheets")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(page)
+    for t in TOPICS:
+        idx.append(dict(t="cheatsheets", n="Cheat Sheets", k="section", x=t["name"], d=t["blurb"], u="cheatsheets/#%s" % t["slug"]))
+
+
+def build_tutorials_hub(idx):
+    groups = []
+    for t in TOPICS + PLANNED:
+        tuts = TUTS_BY_TOPIC.get(t["slug"], [])
+        if tuts:
+            items = "".join('<a class="t-%s" href="../%s/tutorials/%s/"><b>%s</b><span>%s</span></a>' % (t["slug"], t["slug"], tut["slug"], html.escape(tut["name"]), html.escape(tut["desc"][:120])) for tut in tuts)
+        else:
+            items = '<span class="sheet--empty" style="display:block;padding:1rem;color:var(--muted);font-size:.9rem">No tutorials yet — <a href="%s/issues/new?labels=request&amp;title=%%5B%s%%5D%%20" target="_blank" rel="noopener">request one</a>.</span>' % (GH, t["name"])
+            # still render disabled style
+        groups.append('<div class="symgroup t-%s" id="%s"><h2>%s <span class="n">%d</span></h2><div class="symlist">%s</div><p style="margin-top:.8rem;font-size:.9rem"><a href="../%s/tutorials/">Open %s tutorials &rarr;</a></p></div>' % (t["slug"], t["slug"], html.escape(t["name"]), len(tuts), items, t["slug"], html.escape(t["name"])))
+    # also include topics with no planned? already
+    desc = "Step-by-step tutorials by topic — %d tutorials across %d technologies." % (len(TUTORIALS), len(TOPICS))
+    ld = """<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"CollectionPage","@id":"%(base)stutorials/#page","name":"Tutorials","url":"%(base)stutorials/",
+ "description":%(d)s,"isPartOf":{"@type":"WebSite","@id":"%(base)s#site"}},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Tutorials","item":"%(base)stutorials/"}]},
+{"@type":"ItemList","name":"Tutorials","numberOfItems":%(n)d,"itemListElement":[%(items)s]}
+]}</script>
+""" % dict(base=BASE, d=jsonstr(desc), n=len(TUTORIALS),
+           items=",".join('{"@type":"ListItem","position":%d,"name":%s,"url":"%s%s/tutorials/%s/"}' % (i+1, jsonstr(tut["name"]), BASE, tut["topic"], tut["slug"]) for i,tut in enumerate(TUTORIALS)))
+    page = head("Tutorials — Step-by-Step Guides | commands-cheat-sheet", desc, "tutorials", "tutorials", ld, hue=hue_style())
+    page += masthead("tutorials")
+    page += shell_open("tutorials", [(t["slug"], t["name"]) for t in TOPICS])
+    page += """<main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../">Cheat sheets</a><span>/</span><span>Tutorials</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> %d tutorials &middot; %d technologies</p>
+<h1>Tutorials</h1>
+<p class="lede">Guides that walk a failure end-to-end. Each tutorial lives under its topic and keeps the sheet as a companion.</p>
+</div>
+<nav class="jump" aria-label="Jump to a technology">%s</nav>
+%s
+</div></main>""" % (len(TUTORIALS), len(TOPICS), "".join('<a class="t-%s" href="#%s">%s</a>' % (t["slug"], t["slug"], html.escape(t["name"])) for t in TOPICS), "".join(groups))
+    page += footer("tutorials")
+    d = os.path.join(OUT, "tutorials")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(page)
+    for tut in TUTORIALS:
+        idx.append(dict(t="tutorials", n="Tutorials", k="section", x=tut["name"], d=tut["desc"][:100], u="tutorials/#%s" % tut["topic"]))
+        idx.append(dict(t=tut["topic"]+"/tutorials", n=tut["name"], k="cmd", x=tut["title"], d=tut["desc"][:100], u="%s/tutorials/%s/" % (tut["topic"], tut["slug"])))
+
+
+def build_topic_tutorials(slug, idx):
+    t = BY_SLUG.get(slug) or next((p for p in PLANNED if p["slug"]==slug), None)
+    if not t:
+        return
+    tuts = TUTS_BY_TOPIC.get(slug, [])
+    name = t["name"]
+    cards = ""
+    if tuts:
+        for tut in tuts:
+            cards += """<a class="sheet t-%s" href="%s/"><span class="sheet__name">%s</span><p class="sheet__desc">%s</p><span class="sheet__foot"><span>%s</span><span>Tutorial</span></span></a>""" % (slug, tut["slug"], html.escape(tut["name"]), html.escape(tut["desc"]), html.escape(tut["topic"]))
+    else:
+        cards = '<p style="color:var(--muted)">No tutorials yet for %s — <a href="%s/issues/new?labels=request&amp;title=%%5B%s%%5D%%20" target="_blank" rel="noopener">request one</a>.</p>' % (html.escape(name), GH, html.escape(name))
+    desc = "%s tutorials — %d guides." % (name, len(tuts))
+    ld = """<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"CollectionPage","@id":"%(base)s%(slug)s/tutorials/#page","name":%(name)s,"url":"%(base)s%(slug)s/tutorials/",
+ "description":%(d)s,"isPartOf":{"@type":"WebSite","@id":"%(base)s#site"}},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"%(base)s"},
+ {"@type":"ListItem","position":2,"name":%(nm)s,"item":"%(base)s%(slug)s/"},
+ {"@type":"ListItem","position":3,"name":"Tutorials","item":"%(base)s%(slug)s/tutorials/"}]}
+]}</script>
+""" % dict(base=BASE, slug=slug, name=jsonstr(name+" Tutorials"), d=jsonstr(desc), nm=jsonstr(name))
+    page = head(name+" Tutorials | commands-cheat-sheet", desc, slug+"/tutorials", name+" tutorials", ld, hue=hue_style(slug))
+    page += masthead(slug+"/tutorials")
+    page += shell_open(slug+"/tutorials", [(tut["slug"], tut["name"]) for tut in tuts] if tuts else [], slug)
+    page += """<main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../../">Cheat sheets</a><span>/</span><a href="../">%s</a><span>/</span><span>Tutorials</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> %d tutorial%s</p>
+<h1>%s Tutorials</h1>
+<p class="lede">Step-by-step guides for %s. Keep the <a href="../">cheat sheet</a> open alongside.</p>
+</div>
+<div class="sheets">%s</div>
+</div></main>""" % (html.escape(name), len(tuts), "" if len(tuts)==1 else "s", html.escape(name), html.escape(name), cards)
+    page += footer(slug+"/tutorials")
+    d = os.path.join(OUT, slug, "tutorials")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(page)
+    for tut in tuts:
+        idx.append(dict(t=slug+"/tutorials", n=name, k="section", x=tut["name"], d=tut["desc"][:80], u="%s/tutorials/#%s" % (slug, tut["slug"])))
+
+
+def build_tutorial_leaf(tut, idx):
+    src = os.path.join(ROOT, tut["file"])
+    raw = open(src, encoding="utf-8").read() if os.path.exists(src) else ""
+    # extract inner main content from standalone html — style is handled by site.css .tutorial--dark (no global leak)
+    m_main = re.search(r"<main[^>]*>(.*?)</main>", raw, re.S)
+    extracted_main = m_main.group(1).strip() if m_main else raw[:5000]
+    # build page
+    topic = tut["topic"]
+    slug = tut["slug"]
+    path = topic+"/tutorials/"+slug
+    # breadcrumb + topichead
+    title = tut["title"]
+    desc = tut["desc"]
+    kw = tut["kw"]
+    # HowTo steps from tutorial toc
+    steps = re.findall(r'<li><a href="#[^"]+">(.*?)</a></li>', raw)
+    howto_items = ",".join('{"@type":"HowToStep","name":%s}' % jsonstr(re.sub(r"<[^>]+>", "", s).strip()) for s in steps) if steps else ""
+    ld = """<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"%(base)s%(path)s/#article","headline":%(hl)s,"description":%(desc)s,
+ "url":"%(base)s%(path)s/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"%(base)s#site","name":"commands-cheat-sheet","url":"%(base)s"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Beginner","keywords":%(kw)s},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"%(base)s"},
+ {"@type":"ListItem","position":2,"name":%(nm)s,"item":"%(base)s%(topic)s/"},
+ {"@type":"ListItem","position":3,"name":"Tutorials","item":"%(base)s%(topic)s/tutorials/"},
+ {"@type":"ListItem","position":4,"name":%(hl)s,"item":"%(base)s%(path)s/"}]},
+{"@type":"HowTo","name":%(hl)s,"description":%(desc)s,"totalTime":"PT15M","tool":"git","step":[%(steps)s]}
+]}</script>
+""" % dict(base=BASE, path=path, hl=jsonstr(title), desc=jsonstr(desc), kw=jsonstr(kw), nm=jsonstr(BY_SLUG[topic]["name"] if topic in BY_SLUG else topic), topic=topic, steps=howto_items)
+    # toc for rail
+    toc_ids = re.findall(r'<section id="([^"]+)"', extracted_main)
+    toc_names = re.findall(r'<h2>(.*?)</h2>', extracted_main)
+    railsecs = list(zip(toc_ids[:7], [re.sub(r"<[^>]+>","", x).strip() for x in toc_names[:7]]))
+    page = head(title+" | commands-cheat-sheet", desc, path, kw, ld, hue=hue_style(topic))
+    page += masthead(path)
+    page += shell_open(path, railsecs, topic)
+    # topichead with tutorial eyebrow
+    page += """<main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../../../">Cheat sheets</a><span>/</span><a href="../../">%(tname)s</a><span>/</span><a href="../">Tutorials</a><span>/</span><span>%(tutname)s</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> Tutorial &middot; %(tname)s</p>
+<h1>%(title)s</h1>
+<p class="lede">%(desc)s</p>
+</div>
+<div class="tutorial--dark"><div class="wrap">%(body)s</div></div>
+<div class="pagecta" style="margin-top:2rem">
+<p><strong>Keep the cheat sheet open?</strong> The <a href="../../">Git cheat sheet</a> lists every command with its symptom.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap"><a class="btn" href="../../">Open cheat sheet</a><a class="btn btn--ghost" href="../">All %(tname)s tutorials</a></div>
+</div>
+</div></main>""" % dict(tname=html.escape(BY_SLUG[topic]["name"] if topic in BY_SLUG else topic), tutname=html.escape(tut["name"]), title=html.escape(title), desc=html.escape(desc), body=extracted_main)
+    page += footer(path)
+    # copy script from tutorial (handles .copy data-copy)
+    page = page.replace("</body>", """<script>
+document.querySelectorAll('.tutorial--dark .copy').forEach(function(btn){
+  btn.addEventListener('click', async function(){
+    var txt = btn.getAttribute('data-copy');
+    try{ await navigator.clipboard.writeText(txt); var old=btn.textContent; btn.textContent='Copied!'; setTimeout(function(){btn.textContent=old;},1200);}catch(e){
+      var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();btn.textContent='Copied!'; setTimeout(function(){btn.textContent='Copy';},1200);
+    }
+  });
+});
+</script>
+</body>""")
+    d = os.path.join(OUT, topic, "tutorials", slug)
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(page)
+    # index for search: tutorial leaf sections + code blocks
+    for sid, nm in railsecs:
+        idx.append(dict(t=topic, n=tut["name"], k="section", x=nm, d="", u="%s/#%s" % (path, sid)))
+    for cmd in re.findall(r"git [^\n<]+", extracted_main):
+        c = html.unescape(cmd.strip())
+        if len(c) > 3 and len(c) < 80:
+            idx.append(dict(t=topic, n=tut["name"], k="cmd", x=c, d="tutorial", u=path+"/"))
 
 
 def jsonstr(s):
@@ -934,8 +1213,10 @@ def build_meta(mtimes):
     import datetime
     def stamp(p):
         return datetime.datetime.fromtimestamp(mtimes.get(p, 0) or 0, datetime.timezone.utc).strftime("%Y-%m-%d")
-    urls = [("", "1.0", "weekly"), ("symptoms/", "0.9", "weekly")]
+    urls = [("", "1.0", "weekly"), ("symptoms/", "0.9", "weekly"), ("cheatsheets/", "0.8", "weekly"), ("tutorials/", "0.8", "weekly")]
     urls += [(t["slug"] + "/", "0.8", "monthly") for t in TOPICS]
+    urls += [(t["slug"] + "/tutorials/", "0.7", "monthly") for t in TOPICS]
+    urls += [("%s/tutorials/%s/" % (tut["topic"], tut["slug"]), "0.7", "monthly") for tut in TUTORIALS]
     body = "".join(
         "  <url>\n    <loc>%s%s</loc>\n    <lastmod>%s</lastmod>\n"
         "    <changefreq>%s</changefreq>\n    <priority>%s</priority>\n  </url>\n"
@@ -987,9 +1268,24 @@ def main():
     build_index(stats, totals)
     build_symptoms(patterns_all, totals)
     build_404()
+    # new hubs + tutorials (pSEO: separate hubs keep sheets vs tutorials crawlable)
+    build_cheatsheets_hub(stats, totals, idx)
+    build_tutorials_hub(idx)
+    for slug in [t["slug"] for t in TOPICS] + [p["slug"] for p in PLANNED]:
+        build_topic_tutorials(slug, idx)
+        mtimes[slug+"/tutorials/"] = os.path.getmtime(os.path.join(ROOT, TOPICS[0]["file"])) if TOPICS else 0
+    for tut in TUTORIALS:
+        build_tutorial_leaf(tut, idx)
+        # use tutorial file mtime for sitemap
+        try:
+            mtimes[tut["topic"]+"/tutorials/"+tut["slug"]+"/"] = os.path.getmtime(os.path.join(ROOT, tut["file"]))
+        except: 
+            mtimes[tut["topic"]+"/tutorials/"+tut["slug"]+"/"] = max(mtimes.values()) if mtimes else 0
     newest = max(mtimes.values()) if mtimes else 0
     mtimes[""] = newest
     mtimes["symptoms/"] = newest
+    mtimes["cheatsheets/"] = newest
+    mtimes["tutorials/"] = newest
     build_meta(mtimes)
 
     n, size = build_search_index(idx)
