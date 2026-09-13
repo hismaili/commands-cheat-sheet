@@ -1,0 +1,47 @@
+# cheatsheet-forge — repository configuration
+# Created by /cheatsheet-forge:init. Commit this file: it is what makes the
+# pipeline reproducible for anyone who clones the repo.
+version: 1
+
+# Where raw terminal dumps live. Gitignored — they hold unsanitised secrets.
+sources_dir: _sources
+
+# Where the generated documentation site is built.
+site_dir: docs
+
+# nested -> <topic>/<topic>.md      flat -> <topic>.md
+layout: nested
+
+# Topics the pipeline manages. Leave empty to discover them from sources_dir.
+topics:
+  - api-testing
+  - git
+  - kafka
+  - linux
+  - mobile
+  - oci
+  - openshift
+  - podman
+  - ruby
+  - vault
+  - web
+
+# Directory name -> canonical topic, for directories that do not match the
+# topic they hold (a typo you would rather not rename, a legacy name).
+aliases: {}
+
+# Redaction the write guard enforces, on top of its built-in secret patterns.
+#
+# named_entities: literal names that identify a person, employer, client or
+# internal product. The guard blocks any write containing one. Keep them here
+# rather than in the plugin: this file is yours, the plugin is published.
+redact:
+  named_entities: []
+  extra_patterns: []
+
+# unknown_topic: what to do with a write that does not match a known topic.
+#   warn  — scan it for secrets, skip the topic-boundary check (default)
+#   deny  — refuse it until the topic is declared above
+#   allow — scan for secrets only, never mention it
+guard:
+  unknown_topic: warn

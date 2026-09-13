@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git: Rewrite Pushed Commit Messages — Amend, Rebase, Force-With-Lease (Dual-Remote) | commands-cheat-sheet</title>
+<meta name="description" content="Step-by-step to reword commits already pushed and replace one remote with git push --force-with-lease, with backup, verification and collaborator reset.">
+<meta name="keywords" content="git commit amend pushed, git rebase reword, git push force with lease one remote, git reset hard origin">
+<link rel="canonical" href="https://hismaili.github.io/commands-cheat-sheet/git/tutorials/rewrite-pushed-commits/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="commands-cheat-sheet">
+<meta property="og:title" content="Git: Rewrite Pushed Commit Messages — Amend, Rebase, Force-With-Lease (Dual-Remote) | commands-cheat-sheet">
+<meta property="og:description" content="Step-by-step to reword commits already pushed and replace one remote with git push --force-with-lease, with backup, verification and collaborator reset.">
+<meta property="og:url" content="https://hismaili.github.io/commands-cheat-sheet/git/tutorials/rewrite-pushed-commits/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Git: Rewrite Pushed Commit Messages — Amend, Rebase, Force-With-Lease (Dual-Remote) | commands-cheat-sheet">
+<meta name="twitter:description" content="Step-by-step to reword commits already pushed and replace one remote with git push --force-with-lease, with backup, verification and collaborator reset.">
+<meta name="theme-color" content="#080D16">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23080D16'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%235B9BF2' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../../assets/site.css">
+<style>:root{--topic:#F05033}:root[data-theme="light"]{--topic:#B23A1F}.t-openshift{--topic:#F0665A}:root[data-theme="light"] .t-openshift{--topic:#C0392B}.t-oci{--topic:#F0913C}:root[data-theme="light"] .t-oci{--topic:#B45309}.t-linux{--topic:#DFBF45}:root[data-theme="light"] .t-linux{--topic:#8A6D0B}.t-mobile{--topic:#7FC44E}:root[data-theme="light"] .t-mobile{--topic:#3F7A22}.t-vault{--topic:#35C09B}:root[data-theme="light"] .t-vault{--topic:#0F7A62}.t-api-testing{--topic:#45C4DA}:root[data-theme="light"] .t-api-testing{--topic:#0E6E80}.t-web{--topic:#5B9BF2}:root[data-theme="light"] .t-web{--topic:#1D5FB8}.t-podman{--topic:#9C82F0}:root[data-theme="light"] .t-podman{--topic:#5B3FC4}.t-ruby{--topic:#EA6BAA}:root[data-theme="light"] .t-ruby{--topic:#A81E63}.t-git{--topic:#F05033}:root[data-theme="light"] .t-git{--topic:#B23A1F}.t-kafka{--topic:#8194A9}:root[data-theme="light"] .t-kafka{--topic:#5B6675}</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","@id":"https://hismaili.github.io/commands-cheat-sheet/git/tutorials/rewrite-pushed-commits/#article","headline":"Git: Rewrite Pushed Commit Messages — Amend, Rebase, Force-With-Lease (Dual-Remote)","description":"Step-by-step to reword commits already pushed and replace one remote with git push --force-with-lease, with backup, verification and collaborator reset.",
+ "url":"https://hismaili.github.io/commands-cheat-sheet/git/tutorials/rewrite-pushed-commits/","inLanguage":"en","isPartOf":{"@type":"WebSite","@id":"https://hismaili.github.io/commands-cheat-sheet/#site","name":"commands-cheat-sheet","url":"https://hismaili.github.io/commands-cheat-sheet/"},
+ "author":{"@type":"Person","name":"hismaili","url":"https://github.com/hismaili"},
+ "proficiencyLevel":"Beginner","keywords":"git commit amend pushed, git rebase reword, git push force with lease one remote, git reset hard origin"},
+{"@type":"BreadcrumbList","itemListElement":[
+ {"@type":"ListItem","position":1,"name":"Cheat sheets","item":"https://hismaili.github.io/commands-cheat-sheet/"},
+ {"@type":"ListItem","position":2,"name":"Git","item":"https://hismaili.github.io/commands-cheat-sheet/git/"},
+ {"@type":"ListItem","position":3,"name":"Tutorials","item":"https://hismaili.github.io/commands-cheat-sheet/git/tutorials/"},
+ {"@type":"ListItem","position":4,"name":"Git: Rewrite Pushed Commit Messages — Amend, Rebase, Force-With-Lease (Dual-Remote)","item":"https://hismaili.github.io/commands-cheat-sheet/git/tutorials/rewrite-pushed-commits/"}]},
+{"@type":"HowTo","name":"Git: Rewrite Pushed Commit Messages — Amend, Rebase, Force-With-Lease (Dual-Remote)","description":"Step-by-step to reword commits already pushed and replace one remote with git push --force-with-lease, with backup, verification and collaborator reset.","totalTime":"PT15M","tool":"git","step":[{"@type":"HowToStep","name":"0 — Prerequisites &amp; backup"},{"@type":"HowToStep","name":"1 — Diagnose what to rewrite"},{"@type":"HowToStep","name":"2 — Choose scenario (A / B / C)"},{"@type":"HowToStep","name":"3 — Push to one remote only (dual-remote)"},{"@type":"HowToStep","name":"4 — Verify &amp; cleanup"},{"@type":"HowToStep","name":"5 — Recovery if something goes wrong"},{"@type":"HowToStep","name":"6 — What collaborators must do"}]}
+]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="shell masthead__in">
+<button class="burger" type="button" data-drawer aria-controls="rail" aria-expanded="false">
+<span></span><span></span><span></span><span class="sr">Sheets and search</span>
+</button>
+<a class="wordmark" href="../../../"><span class="wordmark__slash">$</span> commands-cheat-sheet</a>
+<nav aria-label="Primary">
+<button class="findbtn" type="button" data-palette-open>
+<span aria-hidden="true">&#9906;</span> Search <kbd>&#8984;K</kbd>
+</button>
+<div class="navdrop" data-navdrop>
+<button class="navdrop__btn" type="button" aria-expanded="false" aria-haspopup="true">Cheat Sheets <span aria-hidden="true">▾</span></button>
+<div class="navdrop__panel" hidden>
+<ul class="navdrop__list"><li><a class="t-openshift" href="../../../openshift/"><i class="dot"></i><span>OpenShift</span><b>139</b></a></li><li><a class="t-linux" href="../../../linux/"><i class="dot"></i><span>Linux</span><b>15</b></a></li><li><a class="t-podman" href="../../../podman/"><i class="dot"></i><span>Podman</span><b>14</b></a></li><li><a class="t-vault" href="../../../vault/"><i class="dot"></i><span>Vault</span><b>7</b></a></li><li><a class="t-oci" href="../../../oci/"><i class="dot"></i><span>Oracle Cloud (OCI)</span><b>8</b></a></li><li><a class="t-web" href="../../../web/"><i class="dot"></i><span>Web / React Native</span><b>5</b></a></li><li><a class="t-mobile" href="../../../mobile/"><i class="dot"></i><span>Mobile</span><b>3</b></a></li><li><a class="t-ruby" href="../../../ruby/"><i class="dot"></i><span>Ruby</span><b>6</b></a></li><li><a class="t-api-testing" href="../../../api-testing/"><i class="dot"></i><span>API Testing</span><b>2</b></a></li><li><a class="t-git" href="../../../git/"><i class="dot"></i><span>Git</span><b>64</b></a></li><li><a class="t-kafka rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Kafka</span><b>&mdash;</b></a></li></ul>
+<div class="navdrop__foot"><a href="../../../cheatsheets/">All cheat sheets →</a></div>
+</div>
+</div>
+<div class="navdrop" data-navdrop>
+<button class="navdrop__btn" type="button" aria-expanded="false" aria-haspopup="true">Tutorials <span aria-hidden="true">▾</span></button>
+<div class="navdrop__panel" hidden>
+<ul class="navdrop__list"><li><span class="navdrop__soon t-openshift"><i class="dot"></i><span>OpenShift</span><b>&mdash;</b></span></li><li><span class="navdrop__soon t-linux"><i class="dot"></i><span>Linux</span><b>&mdash;</b></span></li><li><span class="navdrop__soon t-podman"><i class="dot"></i><span>Podman</span><b>&mdash;</b></span></li><li><span class="navdrop__soon t-vault"><i class="dot"></i><span>Vault</span><b>&mdash;</b></span></li><li><span class="navdrop__soon t-oci"><i class="dot"></i><span>Oracle Cloud (OCI)</span><b>&mdash;</b></span></li><li><span class="navdrop__soon t-web"><i class="dot"></i><span>Web / React Native</span><b>&mdash;</b></span></li><li><span class="navdrop__soon t-mobile"><i class="dot"></i><span>Mobile</span><b>&mdash;</b></span></li><li><span class="navdrop__soon t-ruby"><i class="dot"></i><span>Ruby</span><b>&mdash;</b></span></li><li><span class="navdrop__soon t-api-testing"><i class="dot"></i><span>API Testing</span><b>&mdash;</b></span></li><li><a class="t-git" href="../../../git/tutorials/"><i class="dot"></i><span>Git</span><b>1</b></a></li><li><span class="navdrop__soon t-kafka"><i class="dot"></i><span>Kafka</span><b>&mdash;</b></span></li></ul>
+<div class="navdrop__foot"><a href="../../../tutorials/">All tutorials →</a></div>
+</div>
+</div>
+<a href="../../../symptoms/">Symptoms</a>
+<a class="opt" href="../../../#ask">Ask</a>
+<button class="themetoggle" type="button" data-theme-toggle>PAPER</button>
+<a class="btn btn--sm" href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener"><span class="btn__star">&#9733;</span> Star</a>
+</nav></div></header><div class="app"><aside class="rail" id="rail" data-index="../../../search-index.json" data-up="../../../" aria-label="Sheets and search">
+<div class="rail__in">
+<form class="sf" role="search" data-search onsubmit="return false">
+<label class="sr" for="sf-input">Search every command</label>
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input id="sf-input" class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search commands" aria-expanded="false" aria-controls="sf-results" role="combobox">
+<kbd class="sf__kbd">/</kbd>
+</div>
+<div class="sf__results" id="sf-results" role="listbox" hidden></div>
+</form>
+<h4>Sheets</h4>
+<ul class="rail__sheets"><li><a class="t-openshift" href="../../../openshift/"><i class="dot"></i><span>OpenShift</span><b>139</b></a></li><li><a class="t-linux" href="../../../linux/"><i class="dot"></i><span>Linux</span><b>15</b></a></li><li><a class="t-podman" href="../../../podman/"><i class="dot"></i><span>Podman</span><b>14</b></a></li><li><a class="t-vault" href="../../../vault/"><i class="dot"></i><span>Vault</span><b>7</b></a></li><li><a class="t-oci" href="../../../oci/"><i class="dot"></i><span>Oracle Cloud (OCI)</span><b>8</b></a></li><li><a class="t-web" href="../../../web/"><i class="dot"></i><span>Web / React Native</span><b>5</b></a></li><li><a class="t-mobile" href="../../../mobile/"><i class="dot"></i><span>Mobile</span><b>3</b></a></li><li><a class="t-ruby" href="../../../ruby/"><i class="dot"></i><span>Ruby</span><b>6</b></a></li><li><a class="t-api-testing" href="../../../api-testing/"><i class="dot"></i><span>API Testing</span><b>2</b></a></li><li><a class="t-git aria-current="page"" href="../../../git/"><i class="dot"></i><span>Git</span><b>64</b></a></li><li><a class="t-kafka rail__soon" href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request&amp;title=%5BKafka%5D%20" target="_blank" rel="noopener"><i class="dot"></i><span>Kafka</span><b>&mdash;</b></a></li></ul>
+<h4>On this page</h4><ul class="rail__toc"><li><a href="#prereq">Contents</a></li><li><a href="#diagnose">0 — Prerequisites &amp;amp; backup</a></li><li><a href="#quick-start">1 — Diagnose what to rewrite</a></li><li><a href="#push">2 — Choose your scenario</a></li><li><a href="#verify">3 — Push to ONE remote only (dual-remote)</a></li><li><a href="#recover">4 — Verify &amp;amp; cleanup</a></li><li><a href="#team">5 — Recovery if something goes wrong</a></li></ul>
+<h4>More</h4>
+<ul class="rail__more"><li><a href="../../../symptoms/">Every symptom</a></li><li><a href="../../../#pipeline">How a sheet is made</a></li><li><a href="../../../#ask">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star on GitHub</a></li>
+</ul>
+</div>
+</aside><div class="app__body"><main id="main"><div class="shell">
+<nav class="crumb" aria-label="Breadcrumb"><a href="../../../">Cheat sheets</a><span>/</span><a href="../../">Git</a><span>/</span><a href="../">Tutorials</a><span>/</span><span>Rewrite Pushed Commit Messages</span></nav>
+<div class="topichead">
+<p class="eyebrow"><span class="tick">&#9679;</span> Tutorial &middot; Git</p>
+<h1>Git: Rewrite Pushed Commit Messages — Amend, Rebase, Force-With-Lease (Dual-Remote)</h1>
+<p class="lede">Step-by-step to reword commits already pushed and replace one remote with git push --force-with-lease, with backup, verification and collaborator reset.</p>
+</div>
+<div class="tutorial--dark"><div class="wrap"><hero>
+    <h1>Rewrite commit messages already pushed &amp; remove old commits from remote</h1>
+    <p>Complete procedure for <code>commit --amend</code> / <code>rebase -i</code> + <code>push --force-with-lease</code> with <strong>dual-remote</strong> support. Copy-paste ready for GitHub, GitLab, Bitbucket.</p>
+  </hero>
+
+  <div class="alert alert-danger">
+    <strong>⚠️ Destructive operation:</strong> This rewrites shared history. Old commits will be removed from the targeted remote and become unreachable. Anyone who already pulled the old history will need to <span class="inline-code">git fetch && git reset --hard origin/&lt;branch&gt;</span>. Never force-push to <code>main</code> / <code>master</code> without team agreement and a backup branch.
+  </div>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#prereq">0 — Prerequisites &amp; backup</a></li>
+      <li><a href="#diagnose">1 — Diagnose what to rewrite</a></li>
+      <li><a href="#quick-start">2 — Choose scenario (A / B / C)</a></li>
+      <li><a href="#push">3 — Push to one remote only (dual-remote)</a></li>
+      <li><a href="#verify">4 — Verify &amp; cleanup</a></li>
+      <li><a href="#recover">5 — Recovery if something goes wrong</a></li>
+      <li><a href="#team">6 — What collaborators must do</a></li>
+    </ol>
+  </nav>
+
+  <section id="prereq">
+    <h2>0 — Prerequisites &amp; backup</h2>
+    <div class="grid">
+      <div class="card"><h4>Requirements</h4><p>Clean working tree, fetch permission, force-push permission on target branch. If branch is protected, temporarily allow force push in GitHub: Settings → Branches.</p></div>
+      <div class="card"><h4>Golden rule</h4><p>Never rewrite history that others base work on without warning them. Prefer <code>--force-with-lease</code> over <code>--force</code>.</p></div>
+    </div>
+    <div class="code-block">
+      <div class="head"><span>Backup + fetch</span><button class="copy" data-copy="git fetch --all
+git status
+git branch backup-before-rewrite
+git log --oneline --graph --all -10">Copy</button></div>
+<pre><code>git fetch --all
+git status  # must be clean — commit or stash pending changes
+git branch backup-before-rewrite
+git log --oneline --graph --all -10</code></pre>
+    </div>
+    <div class="alert alert-info"><strong>Tip:</strong> Check remotes first if you have two remotes. See <a href="#push">section 3</a>.</div>
+  </section>
+
+  <section id="diagnose">
+    <h2>1 — Diagnose what to rewrite</h2>
+    <div class="code-block">
+      <div class="head"><span>Inspect history &amp; remotes</span><button class="copy" data-copy="git remote -v
+git branch -vv
+git log --oneline origin/&lt;branch&gt;..HEAD
+git log --oneline -10">Copy</button></div>
+<pre><code>git remote -v
+# origin   git@github.com:you/repo.git (fetch) (push)
+# second   git@github.com:client/repo.git (fetch) (push)
+
+git branch -vv                    # see which remote your branch tracks
+git log --oneline origin/&lt;branch&gt;..HEAD  # commits not yet on origin
+git log --oneline -10             # pick hashes you want to reword</code></pre>
+    </div>
+  </section>
+
+  <section id="quick-start">
+    <h2>2 — Choose your scenario</h2>
+
+    <div class="steps">
+      <div class="step">
+        <h4>Scenario A — Only the last pushed commit</h4>
+        <p>Fastest: amend the message in place.</p>
+        <div class="code-block">
+          <div class="head"><span>bash</span><button class="copy" data-copy="git commit --amend -m &quot;feat: correct commit message&quot;
+git log --oneline -3">Copy</button></div>
+<pre><code>git commit --amend -m "feat: correct commit message"
+git log --oneline -3  # verify new message</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <h4>Scenario B — Last N commits (e.g. last 3)</h4>
+        <p>Interactive rebase. Replace <code>pick</code> with <code>reword</code> (or <code>r</code>) for each commit to edit.</p>
+        <div class="code-block">
+          <div class="head"><span>bash</span><button class="copy" data-copy="git rebase -i HEAD~3">Copy</button></div>
+<pre><code>git rebase -i HEAD~3</code></pre>
+        </div>
+        <p style="font-size:14px">Editor opens:</p>
+        <div class="code-block">
+          <div class="head"><span>rebase todo list — edit then save</span><button class="copy" data-copy="pick a1b2c3 old message 1
+reword d4e5f6 old message 2
+reword 789abc old message 3">Copy</button></div>
+<pre><code>pick a1b2c3 old message 1
+reword d4e5f6 old message 2
+reword 789abc old message 3
+# save and close → Git opens a message editor for each 'reword' sequentially</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <h4>Scenario C — Older commits / all commits of branch</h4>
+        <p>Rebase onto the remote base or a specific hash.</p>
+        <div class="code-block">
+          <div class="head"><span>bash</span><button class="copy" data-copy="git rebase -i origin/main
+# or
+git rebase -i &lt;hash&gt;^">Copy</button></div>
+<pre><code>git rebase -i origin/main
+# or
+git rebase -i &lt;hash&gt;^   # ^ means parent of oldest commit to reword</code></pre>
+        </div>
+        <div class="alert alert-warn"><strong>Conflict?</strong> Fix files, then <span class="inline-code">git add . && git rebase --continue</span>. Abort anytime with <span class="inline-code">git rebase --abort</span>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="push">
+    <h2>3 — Push to ONE remote only (dual-remote)</h2>
+    <p style="color:var(--muted)">Local rebase changes <em>only local</em> history. The remote you <code>push</code> to determines what gets overwritten. The other remote stays untouched.</p>
+
+    <div class="grid">
+      <div class="card"><span class="badge">SAFE</span><h4>Use --force-with-lease</h4><p>Fails if someone else pushed since your fetch. Prevents accidental overwrite.</p></div>
+      <div class="card"><span class="badge" style="border-color:var(--danger);color:var(--danger)">DANGEROUS</span><h4>--force</h4><p>Overwrites unconditionally. Use only if --force-with-lease was rejected and you are sure.</p></div>
+    </div>
+
+    <h3>Target a single remote</h3>
+    <div class="code-block">
+      <div class="head"><span>bash — replace names with your output from git remote -v</span><button class="copy" data-copy="git push --force-with-lease origin &lt;branch-name&gt;
+# explicit refspec (same result):
+git push --force-with-lease origin HEAD:&lt;branch-name&gt;">Copy</button></div>
+<pre><code>git push --force-with-lease origin &lt;branch-name&gt;
+# explicit refspec (same result):
+git push --force-with-lease origin HEAD:&lt;branch-name&gt;</code></pre>
+    </div>
+
+    <h3>Examples</h3>
+    <div class="code-block">
+      <div class="head"><span>two remotes: origin = your fork, upstream = client</span><button class="copy" data-copy="# overwrite ONLY origin, upstream keeps old history
+git push --force-with-lease origin feature/my-branch
+
+# overwrite ONLY second remote
+git push --force-with-lease second feature/my-branch
+
+# DO NOT do this if you want to target one only:
+# git push --all --force   ← pushes to every remote">Copy</button></div>
+<pre><code># overwrite ONLY origin, upstream keeps old history
+git push --force-with-lease origin feature/my-branch
+
+# overwrite ONLY second remote
+git push --force-with-lease second feature/my-branch
+
+# DO NOT do this if you want to target one only:
+# git push --all --force   &lt;-- pushes to every remote</code></pre>
+    </div>
+
+    <div class="alert alert-info"><strong>Check config:</strong> <span class="inline-code">git config --get-regexp push</span> and <span class="inline-code">git config --get-regexp remote</span> — if <code>remote.pushDefault</code> or multiple push URLs are set, an unqualified <code>git push</code> may hit both remotes.</div>
+  </section>
+
+  <section id="verify">
+    <h2>4 — Verify &amp; cleanup</h2>
+    <div class="code-block">
+      <div class="head"><span>bash</span><button class="copy" data-copy="git fetch origin
+git log --oneline origin/&lt;branch-name&gt; -10
+git log --oneline second/&lt;branch-name&gt; -10  # compare second remote if exists
+git diff backup-before-rewrite --stat  # should show no code diff, only messages">Copy</button></div>
+<pre><code>git fetch origin
+git log --oneline origin/&lt;branch-name&gt; -10
+git log --oneline second/&lt;branch-name&gt; -10  # compare second remote if exists
+git diff backup-before-rewrite --stat  # should show no code diff, only messages</code></pre>
+    </div>
+    <p>If verified, delete backup:</p>
+    <div class="code-block"><div class="head"><span>bash</span><button class="copy" data-copy="git branch -D backup-before-rewrite">Copy</button></div><pre><code>git branch -D backup-before-rewrite</code></pre></div>
+  </section>
+
+  <section id="recover">
+    <h2>5 — Recovery if something goes wrong</h2>
+    <div class="code-block">
+      <div class="head"><span>bash</span><button class="copy" data-copy="git reflog  # find previous HEAD
+git reset --hard backup-before-rewrite
+git push --force-with-lease origin &lt;branch-name&gt;
+
+# or abort ongoing rebase
+git rebase --abort">Copy</button></div>
+<pre><code>git reflog  # find previous HEAD
+git reset --hard backup-before-rewrite
+git push --force-with-lease origin &lt;branch-name&gt;
+
+# or abort ongoing rebase
+git rebase --abort</code></pre>
+    </div>
+    <p style="color:var(--muted);font-size:14px">Old commits on GitHub/GitLab remain dangling until GC but are no longer reachable from the branch — this satisfies "removed totally from remote". Direct URL by hash may still work for a few days/hours if cached.</p>
+  </section>
+
+  <section id="team">
+    <h2>6 — What collaborators must do</h2>
+    <div class="code-block">
+      <div class="head"><span>for teammates who already pulled old history</span><button class="copy" data-copy="git fetch --all
+git checkout &lt;branch-name&gt;
+git reset --hard origin/&lt;branch-name&gt;">Copy</button></div>
+<pre><code>git fetch --all
+git checkout &lt;branch-name&gt;
+git reset --hard origin/&lt;branch-name&gt;</code></pre>
+    </div>
+    <p style="color:var(--muted);font-size:14px">Do NOT use <code>git pull</code> (it will merge old + new history). Use <code>reset --hard</code>.</p>
+  </section>
+
+  <section>
+    <h2>TL;DR Cheat Sheet</h2>
+    <div class="code-block">
+      <div class="head"><span>copy all</span><button class="copy" data-copy="git fetch --all && git branch backup-before-rewrite
+git rebase -i HEAD~3   # pick -> reword, edit messages
+git push --force-with-lease origin &lt;branch-name&gt;   # targets ONE remote only
+git fetch origin && git log --oneline origin/&lt;branch-name&gt; -5">Copy</button></div>
+<pre><code>git fetch --all && git branch backup-before-rewrite
+git rebase -i HEAD~3   # pick -> reword, edit messages
+git push --force-with-lease origin &lt;branch-name&gt;   # targets ONE remote only
+git fetch origin && git log --oneline origin/&lt;branch-name&gt; -5</code></pre>
+    </div>
+  </section></div></div>
+<div class="pagecta" style="margin-top:2rem">
+<p><strong>Keep the cheat sheet open?</strong> The <a href="../../">Git cheat sheet</a> lists every command with its symptom.</p>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap"><a class="btn" href="../../">Open cheat sheet</a><a class="btn btn--ghost" href="../">All Git tutorials</a></div>
+</div>
+</div></main><footer class="footer"><div class="shell">
+<div class="footer__grid">
+<div>
+<h4>Sitemap</h4>
+<ul>
+<li><a href="../../../">Home</a></li>
+<li><a href="../../../symptoms/">Every symptom, one page</a></li>
+<li><a href="../../../#pipeline">How a sheet is made</a></li>
+<li><a href="../../../#ask">Ask a question</a></li>
+<li><a href="../../../sitemap.xml">sitemap.xml</a></li>
+</ul>
+</div>
+<div><h4>Cheat sheets</h4><ul><li><a href="../../../openshift/">OpenShift</a></li><li><a href="../../../linux/">Linux</a></li><li><a href="../../../podman/">Podman</a></li><li><a href="../../../vault/">Vault</a></li><li><a href="../../../oci/">Oracle Cloud (OCI)</a></li><li><a href="../../../web/">Web / React Native</a></li><li><a href="../../../mobile/">Mobile</a></li><li><a href="../../../ruby/">Ruby</a></li><li><a href="../../../api-testing/">API Testing</a></li><li><a href="../../../git/">Git</a></li></ul></div>
+<div>
+<h4>Take part</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">Star the repository</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=question" target="_blank" rel="noopener">Ask a question</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=correction" target="_blank" rel="noopener">Report a wrong command</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues/new?labels=request" target="_blank" rel="noopener">Request a technology</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/issues" target="_blank" rel="noopener">Open issues</a></li>
+</ul>
+</div>
+<div>
+<h4>About</h4>
+<ul>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet#readme" target="_blank" rel="noopener">Read the repository</a></li>
+<li><a href="https://github.com/hismaili-awesome-ai/cheatsheet-forge" target="_blank" rel="noopener">cheatsheet-forge pipeline</a></li>
+<li><a href="https://github.com/hismaili/commands-cheat-sheet/blob/main/CLAUDE.md" target="_blank" rel="noopener">Contributor rules</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__base">
+<span>Every command recorded on a working system and traced to its source.</span>
+<span><a href="https://github.com/hismaili/commands-cheat-sheet" target="_blank" rel="noopener">github.com/hismaili/commands-cheat-sheet</a></span>
+</div>
+</div></footer>
+</div></div>
+<div class="palette" data-palette hidden>
+<div class="palette__scrim" data-palette-close></div>
+<div class="palette__box" role="dialog" aria-modal="true" aria-label="Search every command">
+<form class="sf sf--big" role="search" data-search onsubmit="return false">
+<div class="sf__box">
+<span class="sf__icon" aria-hidden="true">&#9906;</span>
+<div class="sf__ghost" aria-hidden="true"><span class="sf__typed"></span><span class="sf__rest"></span></div>
+<input class="sf__input" type="text" autocomplete="off" spellcheck="false"
+       placeholder="Search 138 commands, 48 symptoms" aria-expanded="false" role="combobox">
+<button class="palette__esc" type="button" data-palette-close>esc</button>
+</div>
+<div class="sf__results" role="listbox" hidden></div>
+<p class="palette__hint"><kbd>&#8593;</kbd><kbd>&#8595;</kbd> move &nbsp; <kbd>&#8629;</kbd> open &nbsp; <kbd>tab</kbd> complete</p>
+</form>
+</div>
+</div>
+<script src="../../../assets/site.js" defer></script>
+<script>
+document.querySelectorAll('.tutorial--dark .copy').forEach(function(btn){
+  btn.addEventListener('click', async function(){
+    var txt = btn.getAttribute('data-copy');
+    try{ await navigator.clipboard.writeText(txt); var old=btn.textContent; btn.textContent='Copied!'; setTimeout(function(){btn.textContent=old;},1200);}catch(e){
+      var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();btn.textContent='Copied!'; setTimeout(function(){btn.textContent='Copy';},1200);
+    }
+  });
+});
+</script>
+</body></html>

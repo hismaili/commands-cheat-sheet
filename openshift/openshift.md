@@ -343,6 +343,149 @@ oc get <KIND> <NAME> -n <NAMESPACE> -o jsonpath='{range .status.resources[?(@.ki
 
 ---
 
+## OLM — ConstraintsNotSatisfiable & CSV orphans
+
+`ConstraintsNotSatisfiable` means the Subscription cannot be resolved from any CatalogSource you subscribe to — inspect live objects, not Git alone, then decide forward fix vs orphan cleanup.
+
+```bash
+# Live state — what OLM sees now
+oc get subscription <SUB_NAME> -n <NAMESPACE> -o yaml
+oc get csv -n <NAMESPACE>
+oc get csv -A | grep <CSV_PATTERN>
+oc get installplan -n <NAMESPACE>
+oc get catalogsource -n openshift-marketplace
+oc get catalogsource redhat-operators -n openshift-marketplace -o yaml
+oc get operatorgroup -n <NAMESPACE> -o yaml
+
+# Failure details — why it did not resolve
+oc describe subscription <SUB_NAME> -n <NAMESPACE>
+oc describe installplan -n <NAMESPACE> | grep -A 30 "Status\|Message\|Constraints"
+oc get csv <CSV_NAME> -n <NAMESPACE> -o jsonpath='{.status.phase}'
+```
+
+Forward fix — align Git to `stable-*` and clear pinned `startingCSV`:
+
+```bash
+oc delete installplan -n <NAMESPACE> --field-selector status.phase=Failed
+
+# Allow OLM to resolve latest
+oc patch subscription <SUB_NAME> -n <NAMESPACE> --type merge -p '{"spec":{"startingCSV":null}}'
+
+argocd app sync <APP_NAME> --replace --prune=false
+argocd app sync <APP_NAME> --replace --prune=false --server-side-apply
+```
+
+**Consequence —** `oc delete installplan --field-selector` removes only `Failed` InstallPlans; `oc patch startingCSV:null` unpins the Subscription so OLM can re-resolve. If you use `oc delete csv --all` below, you delete every CSV in the namespace.
+
+Orphan CSV blocking `v6.5.2 → v6.5.2`:
+
+```bash
+argocd app set <APP_NAME> --sync-policy none
+# Discover orphan namespace and back up before deleting
+CSV_NS=$(oc get csv -A | grep <CSV_PATTERN> | awk '{print $1}')
+oc get csv <CSV_NAME> -n <NAMESPACE> -o yaml > /tmp/csv-backup.yaml
+oc delete csv <CSV_NAME> -n <NAMESPACE> --ignore-not-found
+oc delete installplan -n <NAMESPACE> --all --ignore-not-found
+oc wait --for=jsonpath='{.status.state}=AtLatestKnown' subscription/<SUB_NAME> -n <NAMESPACE> --timeout=180s
+argocd app sync <APP_NAME> --replace --prune=false --server-side-apply
+argocd app sync <APP_NAME> --force
+```
+
+**Consequence —** `oc delete csv <CSV_NAME> --ignore-not-found` deletes the CSV and its owned resources — restore from `/tmp/csv-backup.yaml` if needed. `oc delete installplan --all` nukes every InstallPlan in the namespace; prefer `--field-selector status.phase=Failed` for the forward fix. `argocd app sync --force` replaces resources rather than patching.
+
+Hard reset — last resort:
+
+```bash
+oc delete subscription <SUB_NAME> -n <NAMESPACE>
+oc delete csv --all -n <NAMESPACE>
+oc delete installplan -n <NAMESPACE> --all
+argocd app sync <APP_NAME> --replace
+oc wait --for=jsonpath='{.status.state}=AtLatestKnown' subscription/<SUB_NAME> -n <NAMESPACE> --timeout=300s
+```
+
+**Consequence —** `oc delete csv --all` and `oc delete subscription` are destructive last resorts — they delete every CSV/InstallPlan in the namespace and orphan owned resources. `oc delete subscription` in an orphan namespace (`$CSV_NS`) is safer than `--all`. `argocd app sync <APP_NAME> --replace` without `--prune=false` may prune per syncPolicy — add `--prune=false` if you do not intend to delete. `oc wait --timeout=300s` is the hard-reset variant; orphan fix uses `180s`.
+
+---
+
+## Cluster Health — one-liner audit
+
+When the cluster is degraded, start with four probes before diving into component namespaces. `adm top` and `events` tell you if it is capacity or crashloop.
+
+```bash
+# Core
+oc get clusterversion
+oc get clusteroperators
+oc describe co <OPERATOR>
+oc get nodes -o wide
+oc get csr
+
+# Control plane / etcd — quorum is the gate
+oc get pods -n openshift-etcd
+oc get pods -n openshift-kube-apiserver -o wide
+oc -n openshift-etcd rsh etcd-master-0 etcdctl endpoint health --cluster -w table
+oc get --raw='/healthz' --timeout=10s
+
+# Capacity & events
+oc adm top nodes
+oc adm top pods -A --sort-by=cpu | head -20
+oc get events -A --sort-by=.lastTimestamp | tail -20
+
+# Workloads — non-healthy pods and aggregated APIs
+oc get pods -A | grep -v "Running\|Completed"
+oc get apiservices | grep -v Available
+oc get pv,pvc -A
+
+# Full audit — for Red Hat support
+oc adm must-gather --dest-dir=/tmp/must-gather
+```
+
+One-liner that composes the four atomics above — keep as prose illustration, not a `commands.yml` entry:
+
+```bash
+echo "=== CV ===" && oc get clusterversion && echo "=== CO Degraded ===" && oc get co | grep -v "True.*False.*False" && echo "=== Nodes NotReady ===" && oc get nodes | grep -v Ready && echo "=== Failed Pods ===" && oc get pods -A | egrep -v "Running|Completed|NAME"
+```
+
+---
+
+## CRC — Multus FailedCreatePodSandBox (CRC-only)
+
+Single-node OpenShift Local (CRC) fails with `FailedCreatePodSandBox` when Multus or `api-int.crc.testing:6443` is unreachable. Gate the section as CRC-only — do not run `crc ssh` against a real cluster.
+
+```bash
+# Diagnosis
+crc status
+crc ip
+oc get pods -n openshift-multus -o wide
+oc get events -A | grep FailedCreatePodSandBox
+curl -kv https://<CRC_API>:6443/healthz --connect-timeout 5
+oc -n openshift-multus logs ds/multus --tail=100 | grep -E "Unauthorized|token|expire"
+crc ssh -- df -h | grep -E "Filesystem|/dev/"
+crc ssh -- free -h
+crc ssh -- sudo journalctl -u kubelet -n 100 --no-pager | tail -50
+crc ssh -- sudo crictl ps -a | grep -i multus
+crc ssh -- sudo kubeadm certs check-expiration 2>&1 | head -20
+```
+
+Fix — ordered by blast radius:
+
+```bash
+# Bounce Multus/OVN — rescheduled by DaemonSet
+oc delete pod -n <NAMESPACE> --all
+
+# Inside CRC VM — disrupts single-node workload
+crc ssh -- sudo systemctl restart crio kubelet
+
+# Full CRC restart — tears down single-node cluster
+crc stop
+crc config set memory <SIZE>
+crc config set cpus <COUNT>
+crc start
+```
+
+**Consequence —** `oc delete pod --all` deletes every pod in the namespace (recreated by DaemonSet). `crc ssh -- sudo systemctl restart crio kubelet` and `crc stop/start` disrupt the single-node workload.
+
+---
+
 ## Key Patterns
 
 | Symptom | Move |
@@ -355,3 +498,8 @@ oc get <KIND> <NAME> -n <NAMESPACE> -o jsonpath='{range .status.resources[?(@.ki
 | S3 / Loki TLS refused | Extract cert + service CA, `openssl verify` the chain |
 | Field reverts after apply | `--server-side --force-conflicts --field-manager=` |
 | Short name resolves to nothing / wrong thing | Qualify by full API group, especially on `patch`/`can-i` |
+| `ConstraintsNotSatisfiable` persists after install | `oc describe subscription/installplan` → `oc patch subscription startingCSV:null` then `argocd sync --replace` |
+| ClusterOperator degraded | `oc get clusteroperators` then `oc describe co <OPERATOR>` |
+| Nodes NotReady / pods not Running | `oc get nodes -o wide` + `oc get pods -A | grep -v Running` + `oc adm top nodes` |
+| CRC Multus `FailedCreatePodSandBox` | `crc status` + `oc get events | grep FailedCreatePodSandBox` then `crc ssh -- sudo systemctl restart crio kubelet` (CRC-only) |
+| OLM CSV stays `Failed` | `oc get csv -o jsonpath='{.status.phase}'` then `oc delete csv --ignore-not-found` or `oc wait AtLatestKnown` |
