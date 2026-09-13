@@ -145,6 +145,356 @@ for _tut in TUTORIALS:
 
 
 # ---------------------------------------------------------------------------
+# Curated symptom ↔ command mapping — Option A (explicit, no heuristics).
+# Each symptom (slugified Key Patterns first column) lists hint substrings
+# that uniquely identify the fixing command block(s). At build time we
+# resolve hints to actual c-N ids by searching block bodies, so the map is
+# resilient to reordering. SEO-safe: all links are plain <a href="#c-N">
+# / <a href="#q-...">, never JS.
+# ---------------------------------------------------------------------------
+SYMPTOM_HINTS = {
+    "openshift": {
+        "namespace-stuck-terminating": [
+            'finalizers":null',
+        ],
+        "sync-ignored-no-new-operation": [
+            'operation":null',
+            "refresh=hard",
+            '"prune":true',
+        ],
+        "constraintsnotsatisfiable": [
+            "packagemanifest",
+        ],
+        "argo-reports-forbidden": [
+            "--as=system:serviceaccount",
+        ],
+        "app-healthy-one-child-broken": [
+            '.status.resources[?(@.kind==',
+        ],
+        "s3-loki-tls-refused": [
+            "openssl verify -CAfile",
+            "openssl x509 -in",
+        ],
+        "field-reverts-after-apply": [
+            "--server-side --force-conflicts",
+        ],
+        "short-name-resolves-to-nothing-wrong-thing": [
+            "WRONG — ambiguous, may resolve to a different CRD",
+        ],
+        "constraintsnotsatisfiable-persists-after-install": [
+            "oc describe subscription",
+            'startingCSV":null',
+            "argocd app sync",
+        ],
+        "clusteroperator-degraded": [
+            "oc get clusteroperators",
+            "oc describe co",
+        ],
+        "nodes-notready-pods-not-running": [
+            "oc get nodes -o wide",
+            "oc get pods -A",
+            "oc adm top nodes",
+        ],
+        "crc-multus-failedcreatepodsandbox": [
+            "crc status",
+            "FailedCreatePodSandBox",
+            "crc ssh -- sudo systemctl restart",
+        ],
+        "olm-csv-stays-failed": [
+            "oc get csv",
+            ".status.phase",
+            "oc delete csv --ignore-not-found",
+        ],
+    },
+    "linux": {
+        "new-tool-s-command-not-found-after-install": [
+            "export <TOOL_HOME>",
+            "export PATH=$<TOOL_HOME>/bin",
+        ],
+        "path-export-disappears-in-a-new-terminal-session": [
+            ".bash_profile",
+        ],
+        "service-won-t-start-address-already-in-use": [
+            "lsof -i :<PORT>",
+            "fuser -k <PORT>/tcp",
+        ],
+        "provisioning-script-hangs-on-a-yum-prompt": [
+            "yum update -y",
+            "yum install -y",
+        ],
+        "non-root-user-can-t-write-into-a-freshly-created-app-dir": [
+            "mkdir -p <USER_HOME>/app/docker-compose",
+            "chown <USER>:<USER>",
+        ],
+        "systemctl-user-enable-worked-but-service-isn-t-running": [
+            "systemctl --user enable --now",
+            "journalctl --user -u",
+        ],
+        "new-user-unit-file-isn-t-picked-up": [
+            "daemon-reload",
+        ],
+    },
+    "podman": {
+        "need-an-image-built-from-local-source": [
+            "podman build -t <APP_IMAGE> .",
+        ],
+        "registry-tool-rejects-oci-format-image": [
+            "--format docker",
+        ],
+        "want-a-disposable-container-that-cleans-itself-up": [
+            "podman run --rm -d -p",
+        ],
+        "need-a-long-lived-container-with-config-injected": [
+            "podman run -d --name",
+        ],
+        "bring-up-the-whole-compose-stack": [
+            "podman compose up -d",
+        ],
+        "tear-down-the-compose-stack-entirely": [
+            "podman compose down",
+        ],
+        "compose-containers-stuck-on-stale-image-config": [
+            "--force-recreate",
+        ],
+        "container-crash-looping-need-the-story": [
+            "podman logs",
+        ],
+        "unsure-what-s-actually-running-inside-a-container": [
+            "podman exec",
+        ],
+        "can-t-remember-a-container-s-exact-name": [
+            "--filter name=",
+        ],
+        "know-the-port-not-the-container": [
+            "podman ps | grep",
+        ],
+        "need-everything-on-the-host-stopped-right-now": [
+            "podman stop -a",
+        ],
+        "need-a-clean-container-slate-on-the-host": [
+            "podman rm -a",
+        ],
+        "one-container-won-t-die-gracefully": [
+            "podman rm -f",
+        ],
+    },
+    "vault": {
+        "no-path-to-write-secrets-to": [
+            "vault secrets enable -path=kv-",
+        ],
+        "a-method-needs-an-access-policy-before-it-s-useful": [
+            "vault policy write",
+        ],
+        "human-operator-needs-a-login": [
+            "vault auth enable userpass",
+            "vault write auth/userpass/users/",
+        ],
+        "a-service-needs-to-authenticate-not-a-person": [
+            "vault write auth/approle/role/",
+            "role-id",
+            "secret-id",
+        ],
+        "secretid-compromised-or-rotated": [
+            "secret-id",
+        ],
+    },
+    "oci": {
+        "oci-command-not-found": [
+            "brew install oci-cli",
+            "oci --version",
+        ],
+        "no-oci-config-auth-errors-on-every-call": [
+            "oci setup config",
+        ],
+        "ssh-to-instance-hangs-or-is-refused": [
+            "chmod go-rwx",
+        ],
+        "wrong-user-for-the-connection": [
+            "username=opc",
+        ],
+    },
+    "web": {
+        "ios-android-web-run-commands-hang-or-can-t-connect": [
+            "npm start",
+        ],
+        "need-the-app-in-a-browser-for-quick-iteration": [
+            "npm run web",
+        ],
+        "need-a-deployable-static-bundle-not-a-dev-server": [
+            "npm run build:web",
+        ],
+    },
+    "mobile": {
+        "need-an-installable-android-binary-from-a-flutter-project": [
+            "flutter build android app",
+        ],
+        "need-a-native-binary-without-a-local-native-toolchain": [
+            "npx expo build:android",
+        ],
+    },
+    "ruby": {
+        "gem-install-fails-against-apple-managed-system-ruby": [
+            "gem install <GEM_NAME>",
+        ],
+        "gem-ruby-pod-command-not-found-after-install": [
+            "GEM_HOME",
+            "RUBY_HOME",
+        ],
+        "path-export-disappears-in-a-new-terminal-session": [
+            ".bash_profile",
+        ],
+    },
+    "api-testing": {
+        "browser-reports-a-cors-failure-with-no-useful-detail": [
+            "curl -X OPTIONS",
+        ],
+        "need-a-bearer-token-before-you-can-test-a-protected-endpoint": [
+            "grant_type=password",
+        ],
+    },
+    "git": {
+        "push-went-to-the-wrong-upstream": [
+            "git remote -v",
+            "git push <REMOTE> <BRANCH>",
+        ],
+        "same-folder-needs-two-upstreams": [
+            "git remote add <REMOTE> git@<SSH_ALIAS>",
+        ],
+        "one-push-should-hit-two-mirrors": [
+            "set-url --add --push",
+        ],
+        "fan-out-push-only-reaches-one-repo": [
+            "get-url --all --push",
+        ],
+        "git-remote-v-doesn-t-explain-the-behaviour": [
+            "--get-regexp '^remote",
+        ],
+        "commits-carry-the-wrong-name-email": [
+            'git config user.name',
+            "git config --local --list",
+        ],
+        "wrong-identity-keeps-coming-back-after-being-set": [
+            "git config --global --list",
+        ],
+        "did-the-identity-actually-get-used": [
+            "git log -1 --format='%an <%ae>'",
+        ],
+        "setting-identity-per-repo-doesn-t-scale": [
+            'includeIf "gitdir:~/Projects/work/',
+        ],
+        "two-accounts-on-one-provider": [
+            "ssh-keygen -t ed25519",
+        ],
+        "ssh-authenticates-as-the-wrong-account": [
+            "IdentitiesOnly yes",
+            "ssh -vT git@<SSH_ALIAS>",
+        ],
+        "alias-configured-but-ignored": [
+            "git remote set-url <REMOTE> git@<SSH_ALIAS>",
+        ],
+        "repointed-onto-an-alias-but-pushes-still-cross-the-bare-host": [
+            "get-url --all --push",
+        ],
+        "need-the-alias-s-real-target-without-connecting": [
+            "ssh -G git@<SSH_ALIAS>",
+        ],
+        "ssh-t-succeeds-repository-access-denied": [
+            "git ls-remote git@<SSH_ALIAS>",
+            "git ls-remote <REMOTE>",
+        ],
+        "saml-org-missing-from-the-sso-authorization-list": [
+            "github.com/orgs/<ORG>/sso",
+        ],
+        "chasing-an-ssh-failure-through-the-keychain": [
+            "credential.helper",
+        ],
+        "stale-https-credential-cached": [
+            "credential-osxkeychain erase",
+        ],
+        "https-clone-rejects-the-password": [
+            "git clone https://github.com",
+        ],
+        "need-to-rewrite-a-commit-message-already-pushed": [
+            'git commit --amend -m "<MESSAGE>"',
+            "git rebase -i HEAD~3",
+            "git rebase -i origin/",
+        ],
+        "rebase-conflicts-mid-rewrite": [
+            "git rebase --continue",
+            "git rebase --abort",
+        ],
+        "rewritten-history-must-replace-only-one-remote": [
+            "push --force-with-lease <REMOTE> <BRANCH>",
+        ],
+        "unsure-whether-git-push-will-hit-both-remotes": [
+            "--get-regexp push",
+            "--get-regexp remote",
+        ],
+        "rewrite-pushed-history-safely": [
+            "git fetch --all",
+            "git branch backup-before-rewrite",
+        ],
+        "verify-rewrite-kept-code-identical": [
+            "git diff backup-before-rewrite --stat",
+        ],
+        "recovery-after-a-bad-rewrite": [
+            "git reflog",
+            "git reset --hard backup-before-rewrite",
+        ],
+        "collaborator-already-pulled-old-history": [
+            "git reset --hard origin/<BRANCH>",
+            "git checkout <BRANCH>",
+        ],
+        "which-commits-are-not-yet-on-the-remote": [
+            "origin/<BRANCH>..HEAD",
+            "git branch -vv",
+        ],
+    },
+}
+
+
+def _resolve_symptom_links(slug, patterns, code_blocks):
+    """Resolve curated hints to actual c-N ids for this topic.
+
+    patterns: list of (sym, move, pid) from build_topic
+    code_blocks: list of (cid, body) in render order
+    Returns: pid_to_cids dict and cid_to_pids dict (canonical one-to-many).
+    Matching is substring containment on lowercased bodies.
+    """
+    hints = SYMPTOM_HINTS.get(slug, {})
+    pid_to_cids = {}
+    cid_to_pids = {cid: [] for cid, _ in code_blocks}
+    for sym, move, pid in patterns:
+        # pid is like q-namespace-stuck-terminating; extract suffix key
+        key = pid[2:] if pid.startswith("q-") else pid
+        # also try truncated 60 already, but hints keys are truncated 60 already
+        cand_hints = hints.get(key)
+        if not cand_hints:
+            # fallback: try full slug (some keys differ by prefix)
+            cand_hints = hints.get(slugify(sym)[:60])
+        if not cand_hints:
+            continue
+        matched = []
+        for cid, body in code_blocks:
+            low = body.lower()
+            for h in cand_hints:
+                if h.lower() in low:
+                    matched.append(cid)
+                    break
+        # dedupe preserve order, cap to 3 to avoid dilution
+        seen = []
+        for c in matched:
+            if c not in seen:
+                seen.append(c)
+        if seen:
+            pid_to_cids[pid] = seen[:3]
+            for c in seen[:3]:
+                if pid not in cid_to_pids[c]:
+                    cid_to_pids[c].append(pid)
+    return pid_to_cids, cid_to_pids
+
+
+# ---------------------------------------------------------------------------
 # A small Markdown reader. The sheets use a deliberately narrow subset, so a
 # purpose-built reader beats a dependency here — and it lets command blocks
 # and hazard notes become real components rather than generic <pre> and <p>.
@@ -272,7 +622,7 @@ def parse(md):
     return title, intro, keep, patterns
 
 
-def render(blocks, cmd_counter, idx=None, tslug="", tname=""):
+def render(blocks, cmd_counter, idx=None, tslug="", tname="", cid_to_pids=None, pid_to_sym=None):
     """Blocks to HTML. When idx is given, every command block and sub-heading
     is also appended to the search index as it is emitted, so the index cannot
     describe anything the page does not actually contain."""
@@ -292,10 +642,20 @@ def render(blocks, cmd_counter, idx=None, tslug="", tname=""):
         elif kind == "code":
             cmd_counter[0] += 1
             cid = "c-%d" % cmd_counter[0]
-            out.append(
+            cmd_html = (
                 '<div class="cmd" id="%s"><div class="cmd__top"><span class="cmd__lang">%s</span>'
-                '<button class="copy" type="button">COPY</button></div><pre><code>%s</code></pre></div>'
-                % (cid, html.escape(meta), code_html(body)))
+                '<button class="copy" type="button">COPY</button></div><pre><code>%s</code></pre>' % (cid, html.escape(meta), code_html(body)))
+            # SEO-safe bidirectional tag: command → symptom(s) it fixes
+            if cid_to_pids and cid in cid_to_pids:
+                tags = []
+                for pid in cid_to_pids[cid]:
+                    label = pid_to_sym.get(pid, pid[2:].replace("-", " ")) if pid_to_sym else pid[2:].replace("-", " ")
+                    # plain anchor, no JS, crawlable
+                    tags.append('<a class="cmd__tag" href="#%s" aria-label="Fixes symptom %s">%s</a>' % (html.escape(pid), html.escape(label), inline(label)))
+                if tags:
+                    cmd_html += '<div class="cmd__tags" aria-label="Fixes">Fixes: %s</div>' % " ".join(tags)
+            cmd_html += '</div>'
+            out.append(cmd_html)
             if idx is not None:
                 note = ""
                 for line in body.split("\n"):
@@ -571,23 +931,45 @@ def build_topic(t, stats, patterns_all, idx):
         railsecs.append(("symptoms", "Symptom \u2192 move"))
     railsecs.append(("next", "Related sheets"))
 
+    # -- curated bidirectional mapping: collect code blocks in render order to assign c-N --
+    _all_code_bodies = []
+    for kind, meta, body in intro:
+        if kind == "code":
+            _all_code_bodies.append(body)
+    for s in sections:
+        for kind, meta, body in s["blocks"]:
+            if kind == "code":
+                _all_code_bodies.append(body)
+    _code_blocks = [("c-%d" % (i + 1), b) for i, b in enumerate(_all_code_bodies)]
+    # Build pid list for this topic
+    _pids = [("q-" + slugify(sym)[:60], sym, move) for sym, move in patterns]
+    _patterns_for_resolve = [(sym, move, pid) for pid, sym, move in _pids]
+    pid_to_cids, cid_to_pids = _resolve_symptom_links(t["slug"], _patterns_for_resolve, _code_blocks)
+    pid_to_sym = {pid: sym for pid, sym, _ in _pids}
+
     body = []
     if intro:
         body.append('<section id="overview">'
-                    + render(intro, counter, idx, t["slug"], t["name"]) + "</section>")
+                    + render(intro, counter, idx, t["slug"], t["name"], cid_to_pids, pid_to_sym) + "</section>")
     for s in sections:
         idx.append(dict(t=t["slug"], n=t["name"], k="section", x=s["heading"], d="",
                         u="%s/#%s" % (t["slug"], s["id"])))
         body.append('<section id="%s"><h2 id="%s">%s</h2>%s</section>'
                     % (s["id"], s["id"], html.escape(s["heading"]),
-                       render(s["blocks"], counter, idx, t["slug"], t["name"])))
+                       render(s["blocks"], counter, idx, t["slug"], t["name"], cid_to_pids, pid_to_sym)))
 
     faq = []
     for sym, move in patterns:
         pid = "q-" + slugify(sym)[:60]
+        # symptom → command links (SEO-safe plain anchors)
+        cids = pid_to_cids.get(pid, [])
+        fixes_html = ""
+        if cids:
+            links = "".join('<a class="faq__fix" href="#%s">%s</a>' % (html.escape(c), html.escape(c)) for c in cids)
+            fixes_html = '<p class="faq__fixes">Fix: %s</p>' % links
         faq.append(
             '<div class="faq__item" id="%s"><h3 class="faq__q"><a href="#%s">%s</a></h3>'
-            '<p class="faq__a">%s</p></div>' % (pid, pid, inline(sym), inline(move)))
+            '<p class="faq__a">%s</p>%s</div>' % (pid, pid, inline(sym), inline(move), fixes_html))
         patterns_all.append((t, sym, move, pid))
         idx.append(dict(t=t["slug"], n=t["name"], k="symptom", x=sym,
                         d=re.sub(r"[`*]", "", move), u="%s/#%s" % (t["slug"], pid)))
@@ -1124,15 +1506,45 @@ INDEX_DESC = ("A working notebook of commands for OpenShift, Linux, Podman, Vaul
 def build_symptoms(patterns_all, totals):
     jump = "".join('<a class="t-%s" href="#%s">%s</a>' % (t["slug"], t["slug"], html.escape(t["name"]))
                    for t in TOPICS)
+    # Precompute per-topic pid → cids for the hub as well (SEO-safe reuse)
+    _hub_maps = {}
+    for t in TOPICS:
+        try:
+            md = open(os.path.join(ROOT, t["file"]), encoding="utf-8").read()
+            _, intro, sections, pats = parse(md)
+            _bodies = []
+            for kind, meta, body in intro:
+                if kind == "code":
+                    _bodies.append(body)
+            for s in sections:
+                for kind, meta, body in s["blocks"]:
+                    if kind == "code":
+                        _bodies.append(body)
+            _blocks = [("c-%d" % (i + 1), b) for i, b in enumerate(_bodies)]
+            _pids = [("q-" + slugify(sym)[:60], sym, move) for sym, move in pats]
+            _resolve = [(sym, move, pid) for pid, sym, move in _pids]
+            pid_to_cids, _ = _resolve_symptom_links(t["slug"], _resolve, _blocks)
+            _hub_maps[t["slug"]] = pid_to_cids
+        except Exception:
+            _hub_maps[t["slug"]] = {}
     groups = []
     for t in TOPICS:
         rows = [p for p in patterns_all if p[0]["slug"] == t["slug"]]
         if not rows:
             continue
-        items = "".join(
-            '<a href="../%s/#%s"><b>%s</b><span>%s</span></a>'
-            % (t["slug"], pid, inline(sym), inline(move))
-            for _t, sym, move, pid in rows)
+        pid_to_cids = _hub_maps.get(t["slug"], {})
+        rendered_items = []
+        for _t, sym, move, pid in rows:
+            cids = pid_to_cids.get(pid, [])
+            fix_html = ""
+            if cids:
+                # symptom → command links: plain anchors to topic page command ids
+                links = "".join('<a class="symfix" href="../%s/#%s">%s</a>' % (t["slug"], html.escape(c), html.escape(c)) for c in cids)
+                fix_html = '<span class="symfixes">Fix: %s</span>' % links
+            rendered_items.append(
+                '<a href="../%s/#%s"><b>%s</b><span>%s</span>%s</a>'
+                % (t["slug"], pid, inline(sym), inline(move), fix_html))
+        items = "".join(rendered_items)
         groups.append(
             '<div class="symgroup t-%s" id="%s"><h2>%s <span class="n">%d</span></h2>'
             '<div class="symlist">%s</div>'

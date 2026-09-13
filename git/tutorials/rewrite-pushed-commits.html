@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git - Rewrite Pushed Commit Messages (Force Push Guide)</title>
+<meta name="description" content="Step-by-step procedure to rewrite git commit messages already pushed and remove old commits from remote, including dual-remote handling.">
+<style>
+  :root{
+    --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--accent2:#1f6feb;--warn:#d29922;--warn-bg:#bb800926;--danger:#f85149;--danger-bg:#f8514926;--success:#3fb950;--code-bg:#0d1117;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:10}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;flex-wrap:wrap;gap:12px}
+  .logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:10px}
+  .logo span{color:var(--muted);font-weight:400;font-size:13px;border:1px solid var(--border);padding:2px 8px;border-radius:20px}
+  .btn{appearance:none;border:1px solid var(--border);background:var(--bg3);color:var(--text);padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer}
+  .btn-primary{background:var(--accent2);border-color:var(--accent2);color:#fff}
+  .btn:hover{filter:brightness(1.15)}
+  hero{padding:40px 0 20px}
+  hero h1{font-size:32px;line-height:1.2;margin:0 0 12px}
+  hero p{color:var(--muted);font-size:16px;margin:0}
+  .toc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:24px 0}
+  .toc h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+  .toc ol{margin:0;padding-left:18px}
+  .toc li{margin:4px 0;font-size:14px}
+  section{margin:36px 0}
+  h2{font-size:22px;border-bottom:1px solid var(--border);padding-bottom:8px;margin:32px 0 16px}
+  h3{font-size:17px;margin:24px 0 10px;color:var(--text)}
+  .alert{border-radius:6px;padding:14px 16px;border:1px solid var(--border);margin:16px 0;font-size:14px}
+  .alert-warn{background:var(--warn-bg);border-color:rgba(187,128,9,.4)}
+  .alert-warn strong{color:var(--warn)}
+  .alert-danger{background:var(--danger-bg);border-color:rgba(248,81,73,.4)}
+  .alert-danger strong{color:var(--danger)}
+  .alert-info{background:rgba(56,139,253,.1);border-color:rgba(56,139,253,.3)}
+  code{font-family:ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,monospace;font-size:13.5px}
+  .inline-code{background:rgba(110,118,129,.4);padding:1px 5px;border-radius:4px;font-size:13px}
+  .code-block{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:8px;margin:12px 0;overflow:hidden}
+  .code-block .head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)}
+  .code-block pre{margin:0;padding:14px 16px;overflow-x:auto;white-space:pre;font-size:13px;line-height:1.5}
+  .copy{font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer}
+  .copy:active{transform:scale(.96)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:700px){.grid{grid-template-columns:1fr} hero h1{font-size:26px}}
+  .card{border:1px solid var(--border);background:var(--bg2);border-radius:8px;padding:16px}
+  .card h4{margin:0 0 6px;font-size:14px}
+  .card p{margin:0;color:var(--muted);font-size:13px}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px;border:1px solid var(--border);color:var(--muted);margin-bottom:6px}
+  .steps{counter-reset:step}
+  .step{counter-increment:step;position:relative;padding-left:44px;margin:18px 0}
+  .step:before{content:counter(step);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--accent)}
+  .step h4{margin:0 0 4px;font-size:15px}
+  .step p{margin:0 0 8px;color:var(--muted);font-size:14px}
+  .kbd{border:1px solid var(--border);border-bottom-width:2px;background:var(--bg3);padding:1px 6px;border-radius:4px;font-size:12px}
+  footer{border-top:1px solid var(--border);margin-top:40px;padding:24px 0;color:var(--muted);font-size:13px;text-align:center}
+  .toc a{color:var(--muted)}
+  .toc a:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="logo">🔧 Git Rewrite Guide <span>force-push &amp; reword</span></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="window.print()">Print / Save PDF</button>
+      <a class="btn btn-primary" href="#quick-start">Jump to steps</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <hero>
+    <h1>Rewrite commit messages already pushed &amp; remove old commits from remote</h1>
+    <p>Complete procedure for <code>commit --amend</code> / <code>rebase -i</code> + <code>push --force-with-lease</code> with <strong>dual-remote</strong> support. Copy-paste ready for GitHub, GitLab, Bitbucket.</p>
+  </hero>
+
+  <div class="alert alert-danger">
+    <strong>⚠️ Destructive operation:</strong> This rewrites shared history. Old commits will be removed from the targeted remote and become unreachable. Anyone who already pulled the old history will need to <span class="inline-code">git fetch && git reset --hard origin/&lt;branch&gt;</span>. Never force-push to <code>main</code> / <code>master</code> without team agreement and a backup branch.
+  </div>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#prereq">0 — Prerequisites &amp; backup</a></li>
+      <li><a href="#diagnose">1 — Diagnose what to rewrite</a></li>
+      <li><a href="#quick-start">2 — Choose scenario (A / B / C)</a></li>
+      <li><a href="#push">3 — Push to one remote only (dual-remote)</a></li>
+      <li><a href="#verify">4 — Verify &amp; cleanup</a></li>
+      <li><a href="#recover">5 — Recovery if something goes wrong</a></li>
+      <li><a href="#team">6 — What collaborators must do</a></li>
+    </ol>
+  </nav>
+
+  <section id="prereq">
+    <h2>0 — Prerequisites &amp; backup</h2>
+    <div class="grid">
+      <div class="card"><h4>Requirements</h4><p>Clean working tree, fetch permission, force-push permission on target branch. If branch is protected, temporarily allow force push in GitHub: Settings → Branches.</p></div>
+      <div class="card"><h4>Golden rule</h4><p>Never rewrite history that others base work on without warning them. Prefer <code>--force-with-lease</code> over <code>--force</code>.</p></div>
+    </div>
+    <div class="code-block">
+      <div class="head"><span>Backup + fetch</span><button class="copy" data-copy="git fetch --all
+git status
+git branch backup-before-rewrite
+git log --oneline --graph --all -10">Copy</button></div>
+<pre><code>git fetch --all
+git status  # must be clean — commit or stash pending changes
+git branch backup-before-rewrite
+git log --oneline --graph --all -10</code></pre>
+    </div>
+    <div class="alert alert-info"><strong>Tip:</strong> Check remotes first if you have two remotes. See <a href="#push">section 3</a>.</div>
+  </section>
+
+  <section id="diagnose">
+    <h2>1 — Diagnose what to rewrite</h2>
+    <div class="code-block">
+      <div class="head"><span>Inspect history &amp; remotes</span><button class="copy" data-copy="git remote -v
+git branch -vv
+git log --oneline origin/&lt;branch&gt;..HEAD
+git log --oneline -10">Copy</button></div>
+<pre><code>git remote -v
+# origin   git@github.com:you/repo.git (fetch) (push)
+# second   git@github.com:client/repo.git (fetch) (push)
+
+git branch -vv                    # see which remote your branch tracks
+git log --oneline origin/&lt;branch&gt;..HEAD  # commits not yet on origin
+git log --oneline -10             # pick hashes you want to reword</code></pre>
+    </div>
+  </section>
+
+  <section id="quick-start">
+    <h2>2 — Choose your scenario</h2>
+
+    <div class="steps">
+      <div class="step">
+        <h4>Scenario A — Only the last pushed commit</h4>
+        <p>Fastest: amend the message in place.</p>
+        <div class="code-block">
+          <div class="head"><span>bash</span><button class="copy" data-copy="git commit --amend -m &quot;feat: correct commit message&quot;
+git log --oneline -3">Copy</button></div>
+<pre><code>git commit --amend -m "feat: correct commit message"
+git log --oneline -3  # verify new message</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <h4>Scenario B — Last N commits (e.g. last 3)</h4>
+        <p>Interactive rebase. Replace <code>pick</code> with <code>reword</code> (or <code>r</code>) for each commit to edit.</p>
+        <div class="code-block">
+          <div class="head"><span>bash</span><button class="copy" data-copy="git rebase -i HEAD~3">Copy</button></div>
+<pre><code>git rebase -i HEAD~3</code></pre>
+        </div>
+        <p style="font-size:14px">Editor opens:</p>
+        <div class="code-block">
+          <div class="head"><span>rebase todo list — edit then save</span><button class="copy" data-copy="pick a1b2c3 old message 1
+reword d4e5f6 old message 2
+reword 789abc old message 3">Copy</button></div>
+<pre><code>pick a1b2c3 old message 1
+reword d4e5f6 old message 2
+reword 789abc old message 3
+# save and close → Git opens a message editor for each 'reword' sequentially</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <h4>Scenario C — Older commits / all commits of branch</h4>
+        <p>Rebase onto the remote base or a specific hash.</p>
+        <div class="code-block">
+          <div class="head"><span>bash</span><button class="copy" data-copy="git rebase -i origin/main
+# or
+git rebase -i &lt;hash&gt;^">Copy</button></div>
+<pre><code>git rebase -i origin/main
+# or
+git rebase -i &lt;hash&gt;^   # ^ means parent of oldest commit to reword</code></pre>
+        </div>
+        <div class="alert alert-warn"><strong>Conflict?</strong> Fix files, then <span class="inline-code">git add . && git rebase --continue</span>. Abort anytime with <span class="inline-code">git rebase --abort</span>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="push">
+    <h2>3 — Push to ONE remote only (dual-remote)</h2>
+    <p style="color:var(--muted)">Local rebase changes <em>only local</em> history. The remote you <code>push</code> to determines what gets overwritten. The other remote stays untouched.</p>
+
+    <div class="grid">
+      <div class="card"><span class="badge">SAFE</span><h4>Use --force-with-lease</h4><p>Fails if someone else pushed since your fetch. Prevents accidental overwrite.</p></div>
+      <div class="card"><span class="badge" style="border-color:var(--danger);color:var(--danger)">DANGEROUS</span><h4>--force</h4><p>Overwrites unconditionally. Use only if --force-with-lease was rejected and you are sure.</p></div>
+    </div>
+
+    <h3>Target a single remote</h3>
+    <div class="code-block">
+      <div class="head"><span>bash — replace names with your output from git remote -v</span><button class="copy" data-copy="git push --force-with-lease origin &lt;branch-name&gt;
+# explicit refspec (same result):
+git push --force-with-lease origin HEAD:&lt;branch-name&gt;">Copy</button></div>
+<pre><code>git push --force-with-lease origin &lt;branch-name&gt;
+# explicit refspec (same result):
+git push --force-with-lease origin HEAD:&lt;branch-name&gt;</code></pre>
+    </div>
+
+    <h3>Examples</h3>
+    <div class="code-block">
+      <div class="head"><span>two remotes: origin = your fork, upstream = client</span><button class="copy" data-copy="# overwrite ONLY origin, upstream keeps old history
+git push --force-with-lease origin feature/my-branch
+
+# overwrite ONLY second remote
+git push --force-with-lease second feature/my-branch
+
+# DO NOT do this if you want to target one only:
+# git push --all --force   ← pushes to every remote">Copy</button></div>
+<pre><code># overwrite ONLY origin, upstream keeps old history
+git push --force-with-lease origin feature/my-branch
+
+# overwrite ONLY second remote
+git push --force-with-lease second feature/my-branch
+
+# DO NOT do this if you want to target one only:
+# git push --all --force   &lt;-- pushes to every remote</code></pre>
+    </div>
+
+    <div class="alert alert-info"><strong>Check config:</strong> <span class="inline-code">git config --get-regexp push</span> and <span class="inline-code">git config --get-regexp remote</span> — if <code>remote.pushDefault</code> or multiple push URLs are set, an unqualified <code>git push</code> may hit both remotes.</div>
+  </section>
+
+  <section id="verify">
+    <h2>4 — Verify &amp; cleanup</h2>
+    <div class="code-block">
+      <div class="head"><span>bash</span><button class="copy" data-copy="git fetch origin
+git log --oneline origin/&lt;branch-name&gt; -10
+git log --oneline second/&lt;branch-name&gt; -10  # compare second remote if exists
+git diff backup-before-rewrite --stat  # should show no code diff, only messages">Copy</button></div>
+<pre><code>git fetch origin
+git log --oneline origin/&lt;branch-name&gt; -10
+git log --oneline second/&lt;branch-name&gt; -10  # compare second remote if exists
+git diff backup-before-rewrite --stat  # should show no code diff, only messages</code></pre>
+    </div>
+    <p>If verified, delete backup:</p>
+    <div class="code-block"><div class="head"><span>bash</span><button class="copy" data-copy="git branch -D backup-before-rewrite">Copy</button></div><pre><code>git branch -D backup-before-rewrite</code></pre></div>
+  </section>
+
+  <section id="recover">
+    <h2>5 — Recovery if something goes wrong</h2>
+    <div class="code-block">
+      <div class="head"><span>bash</span><button class="copy" data-copy="git reflog  # find previous HEAD
+git reset --hard backup-before-rewrite
+git push --force-with-lease origin &lt;branch-name&gt;
+
+# or abort ongoing rebase
+git rebase --abort">Copy</button></div>
+<pre><code>git reflog  # find previous HEAD
+git reset --hard backup-before-rewrite
+git push --force-with-lease origin &lt;branch-name&gt;
+
+# or abort ongoing rebase
+git rebase --abort</code></pre>
+    </div>
+    <p style="color:var(--muted);font-size:14px">Old commits on GitHub/GitLab remain dangling until GC but are no longer reachable from the branch — this satisfies "removed totally from remote". Direct URL by hash may still work for a few days/hours if cached.</p>
+  </section>
+
+  <section id="team">
+    <h2>6 — What collaborators must do</h2>
+    <div class="code-block">
+      <div class="head"><span>for teammates who already pulled old history</span><button class="copy" data-copy="git fetch --all
+git checkout &lt;branch-name&gt;
+git reset --hard origin/&lt;branch-name&gt;">Copy</button></div>
+<pre><code>git fetch --all
+git checkout &lt;branch-name&gt;
+git reset --hard origin/&lt;branch-name&gt;</code></pre>
+    </div>
+    <p style="color:var(--muted);font-size:14px">Do NOT use <code>git pull</code> (it will merge old + new history). Use <code>reset --hard</code>.</p>
+  </section>
+
+  <section>
+    <h2>TL;DR Cheat Sheet</h2>
+    <div class="code-block">
+      <div class="head"><span>copy all</span><button class="copy" data-copy="git fetch --all && git branch backup-before-rewrite
+git rebase -i HEAD~3   # pick -> reword, edit messages
+git push --force-with-lease origin &lt;branch-name&gt;   # targets ONE remote only
+git fetch origin && git log --oneline origin/&lt;branch-name&gt; -5">Copy</button></div>
+<pre><code>git fetch --all && git branch backup-before-rewrite
+git rebase -i HEAD~3   # pick -> reword, edit messages
+git push --force-with-lease origin &lt;branch-name&gt;   # targets ONE remote only
+git fetch origin && git log --oneline origin/&lt;branch-name&gt; -5</code></pre>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Generated for GitHub Pages — drop this <code>index.html</code> at the repo root (or <code>/docs</code>) and enable Pages via Settings → Pages → Deploy from branch. No build step required.</p>
+    <p style="margin-top:6px"><a href="#">Back to top ↑</a></p>
+  </div>
+</footer>
+
+<script>
+// copy buttons
+document.querySelectorAll('.copy').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const txt = btn.getAttribute('data-copy');
+    try{
+      await navigator.clipboard.writeText(txt);
+      const old = btn.textContent;
+      btn.textContent='Copied!';
+      setTimeout(()=>btn.textContent=old,1200);
+    }catch(e){
+      // fallback
+      const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+      btn.textContent='Copied!';
+      setTimeout(()=>btn.textContent='Copy',1200);
+    }
+  });
+});
+</script>
+</body>
+</html>
