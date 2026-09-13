@@ -20,6 +20,10 @@ OUT = os.path.join(ROOT, "docs")
 REPO = "hismaili/commands-cheat-sheet"
 BASE = "https://hismaili.github.io/commands-cheat-sheet/"
 GH = "https://github.com/" + REPO
+# GSC verification — must be in <head> on the verified URL. Keeping it here
+# (not as a manual edit to docs/index.html) ensures `python3 docs/build.py`
+# does not overwrite it. Content comes from GSC → Settings → Verification.
+GOOGLE_SITE_VERIFICATION = "xtmmLrcT4Lq6ALA7l4SZBgLTFQFuCUHqMBBXHWo6pM8"
 
 # ---------------------------------------------------------------------------
 # Topic metadata. The prose lives in the sheets; this is only what a search
@@ -694,12 +698,16 @@ def render(blocks, cmd_counter, idx=None, tslug="", tname="", cid_to_pids=None, 
 def head(title, desc, path, kw="", extra_ld="", hue=""):
     up = get_up(path)
     canon = BASE + (path + "/" if path else "")
+    # GSC meta must be crawlable in the <head> of the exact verified URL.
+    # Emit on every page so a URL-prefix property for any sub-path still verifies,
+    # and so `docs/index.html` is not a special-cased manual edit.
+    gsc = '<meta name="google-site-verification" content="%s">\n' % html.escape(GOOGLE_SITE_VERIFICATION) if GOOGLE_SITE_VERIFICATION else ""
     return """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>%(title)s</title>
+%(gsc)s<title>%(title)s</title>
 <meta name="description" content="%(desc)s">
 %(kw)s<link rel="canonical" href="%(canon)s">
 <meta property="og:type" content="website">
@@ -720,8 +728,8 @@ def head(title, desc, path, kw="", extra_ld="", hue=""):
 <body>
 <a class="skip" href="#main">Skip to content</a>
 """ % dict(title=html.escape(title), desc=html.escape(desc), canon=canon, up=up,
-           kw=('<meta name="keywords" content="%s">\n' % html.escape(kw)) if kw else "",
-           ld=extra_ld, hue=hue)
+            kw=('<meta name="keywords" content="%s">\n' % html.escape(kw)) if kw else "",
+            ld=extra_ld, hue=hue, gsc=gsc)
 
 
 STATS = {}          # slug -> {"cmds": n, "patterns": n, ...}; filled by main()
